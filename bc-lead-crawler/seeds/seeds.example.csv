@@ -1,0 +1,6 @@
+# Copy to seeds/seeds.csv and add 30-50 Bay Area companies (about 10 per segment).
+# segment_hint: property_manager, multifamily_property_manager, hoa_management, commercial_property_manager,
+#               general_contractor, developer, home_builder, commercial_real_estate, public_agency, unknown
+# source: where the company came from (apollo, manual, datasf-permits, ...). Only public business websites.
+website,company_name,segment_hint,source,notes
+https://bestconstruction.pro,Best Construction,unknown,manual,Smoke test - our own site

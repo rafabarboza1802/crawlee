@@ -1,0 +1,26 @@
+{
+    "name": "bc-lead-crawler",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Public business-website crawler for Best Construction's lead-generation pipeline (built on Crawlee).",
+    "type": "module",
+    "engines": {
+        "node": ">=22"
+    },
+    "scripts": {
+        "crawl": "tsx src/main.ts",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "cheerio": "1.0.0-rc.12",
+        "crawlee": "3.18.2",
+        "zod": "^4.1.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.0.0",
+        "tsx": "^4.20.0",
+        "typescript": "^5.9.0",
+        "vitest": "^3.2.0"
+    }
+}
