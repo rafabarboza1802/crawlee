@@ -116,12 +116,26 @@ export const PUBLIC_ROLE_TITLES = [
     'Maintenance Supervisor',
     'Maintenance Manager',
     'Director of Maintenance',
+    'Leasing Manager',
+    'General Manager',
     'Project Manager',
     'Senior Project Manager',
+    'Preconstruction Manager',
+    'Director of Preconstruction',
+    'Superintendent',
     'Chief Estimator',
     'Estimator',
     'Purchasing Manager',
     'Procurement Manager',
+    // Public agencies
+    'Director of Public Works',
+    'Public Works Director',
+    'City Engineer',
+    'County Engineer',
+    'Purchasing Agent',
+    'Procurement Officer',
+    'Contracts Manager',
+    'Capital Projects Manager',
 ] as const;
 
 /**
@@ -145,8 +159,92 @@ export const SIGNAL_KEYWORDS: Record<SignalCategory, readonly string[]> = {
         'tenant improvements',
     ],
     portfolio: ['multifamily', 'apartment communities', 'homeowners association', 'HOA', 'HOAs', 'common areas'],
-    project_activity: ['under construction', 'now selling', 'coming soon', 'new homes', 'groundbreaking', 'entitled'],
+    project_activity: [
+        'under construction',
+        'now selling',
+        'coming soon',
+        'new homes',
+        'groundbreaking',
+        'entitled',
+        'entitlements',
+        'ground-up',
+        'infill',
+        'mixed-use',
+        'townhomes',
+    ],
+    // General contractors looking for subs
+    sub_bidding: [
+        'subcontractors',
+        'subcontractor',
+        'trade partners',
+        'prequalification',
+        'prequalified',
+        'bid list',
+        'bidders list',
+        'invitation to bid',
+        'plan room',
+    ],
+    // Public agencies
+    public_bid: [
+        'request for proposals',
+        'request for qualifications',
+        'RFP',
+        'RFQ',
+        'IFB',
+        'invitation for bids',
+        'notice inviting bids',
+        'bid opening',
+        'prevailing wage',
+        'public works',
+        'capital improvement program',
+        'capital projects',
+    ],
+    commercial: [
+        'shopping center',
+        'retail center',
+        'business park',
+        'industrial park',
+        'office park',
+        'office building',
+        'medical office',
+        'industrial',
+        'flex space',
+    ],
+    // Organizations serving homeowners (never individual homeowners)
+    residential: [
+        'backyard',
+        'outdoor living',
+        'landscaping',
+        'retaining wall',
+        'ADU',
+        'accessory dwelling unit',
+        'design studio',
+        'homeowners',
+    ],
 };
+
+/**
+ * Hosts of public bid / vendor portals. Links to them are recorded as evidence but never visited:
+ * they are other sites, usually behind registration.
+ */
+export const BID_PORTAL_HOSTS = [
+    'planetbids.com',
+    'bidnetdirect.com',
+    'caleprocure.ca.gov',
+    'demandstar.com',
+    'publicpurchase.com',
+    'bidsync.com',
+    'periscopeholdings.com',
+    'procurement.opengov.com',
+    'bonfirehub.com',
+    'questcdn.com',
+    'ebidboard.com',
+    'buildingconnected.com',
+    'smartbidnet.com',
+    'isqft.com',
+    'pipelinesuite.com',
+    'procore.com',
+] as const;
 
 /** Regexes for portfolio-scale statements such as "4,200 units" or "1.2 million square feet". */
 export const PORTFOLIO_SCALE_PATTERNS: readonly RegExp[] = [

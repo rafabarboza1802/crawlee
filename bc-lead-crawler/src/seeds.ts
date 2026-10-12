@@ -23,10 +23,13 @@ export function parseSeedsCsv(csv: string): Seed[] {
                 const value = row[j]?.trim();
                 if (value) raw[col] = value;
             });
-            if (raw.website && !/^https?:\/\//i.test(raw.website)) raw.website = `https://${raw.website}`;
+            // Bare domains get https://; anything with another scheme is left as-is so validation rejects it.
+            if (raw.website && !/^[a-z][a-z0-9+.-]*:/i.test(raw.website)) raw.website = `https://${raw.website}`;
             const parsed = SeedSchema.safeParse(raw);
             if (!parsed.success) {
-                throw new Error(`Seed row ${i + 2} is invalid: ${parsed.error.issues.map((x) => `${x.path.join('.')}: ${x.message}`).join('; ')}`);
+                const issues = parsed.error.issues.map((x) => `${x.path.join('.')}: ${x.message}`).join('; ');
+                // Row numbers exclude "#" comment lines, so also name the website to make the row easy to find.
+                throw new Error(`Seed row ${i + 2} ("${raw.website ?? ''}") is invalid: ${issues}`);
             }
             return parsed.data;
         });

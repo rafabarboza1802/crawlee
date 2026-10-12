@@ -29,3 +29,13 @@ describe('parseSeedsCsv', () => {
         expect(() => parseSeedsCsv('website,segment_hint\nacme.example,plumbers\n')).toThrow(/row 2/);
     });
 });
+
+describe('parseSeedsCsv website validation', () => {
+    test('rejects non-http(s) websites instead of producing a garbage URL', () => {
+        expect(() => parseSeedsCsv('website\nftp://acme.example\n')).toThrow(/row 2/);
+    });
+
+    test('names the offending website so it can be found even when the file has comment lines', () => {
+        expect(() => parseSeedsCsv('# note\n# note\nwebsite\ngood.example\nmailto:x@y.example\n')).toThrow(/"mailto:x@y\.example"/);
+    });
+});

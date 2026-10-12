@@ -3,6 +3,7 @@ import { load } from 'cheerio';
 
 import type { Address, Evidence, Signal, SignalCategory } from './schema.js';
 import {
+    BID_PORTAL_HOSTS,
     GENERIC_MAILBOXES,
     PORTFOLIO_SCALE_PATTERNS,
     PUBLIC_ROLE_TITLES,
@@ -21,6 +22,7 @@ export interface PageFindings {
     serviceAreaMentions: Evidence[];
     publicRoles: Evidence[];
     socialProfiles: Evidence[];
+    bidPortalLinks: Evidence[];
     signals: Signal[];
 }
 
@@ -46,10 +48,8 @@ export function extractPage(html: string, url: string): PageFindings {
         .toArray()
         .map((el) => ({ href: $(el).attr('href')!.trim(), text: $(el).text().replace(/\s+/g, ' ').trim() }));
 
-    // Visible text only.
-    const $body = $('body').clone();
-    $body.find('script, style, noscript, template, svg').remove();
-    const text = $body.text().replace(/\s+/g, ' ').trim();
+    const text = visibleText($);
+    const absoluteLinks = links.map((l) => absolutize(l.href, url)).filter((u): u is string => !!u && /^https?:/.test(u));
 
     const ev = (value: string): Evidence => ({ value, source_url: url });
 
@@ -67,12 +67,12 @@ export function extractPage(html: string, url: string): PageFindings {
         ),
         businessEmails: uniqueEvidence(
             [
-                ...links.filter((l) => /^mailto:/i.test(l.href)).map((l) => decodeSafe(l.href.slice(7).split('?')[0]!)),
+                ...links.filter((l) => /^mailto:/i.test(l.href)).flatMap((l) => decodeSafe(l.href.slice(7).split('?')[0]!).split(/[,;]/)),
                 ...jsonLd.map((o) => (typeof o.email === 'string' ? o.email.replace(/^mailto:/i, '') : undefined)),
                 ...(text.match(EMAIL_RE) ?? []),
             ]
                 .filter((e): e is string => !!e)
-                .map((e) => e.toLowerCase())
+                .map((e) => e.trim().toLowerCase())
                 .filter(isGenericBusinessEmail)
                 .map(ev),
         ),
@@ -87,12 +87,8 @@ export function extractPage(html: string, url: string): PageFindings {
             SERVICE_AREA_PLACES.filter((place) => wordRegex(place, true).test(text)).map(ev),
         ),
         publicRoles: uniqueEvidence(PUBLIC_ROLE_TITLES.filter((title) => wordRegex(title, true).test(text)).map(ev)),
-        socialProfiles: uniqueEvidence(
-            links
-                .map((l) => absolutize(l.href, url))
-                .filter((u): u is string => !!u && SOCIAL_RE.test(u))
-                .map((u) => ev(u.replace(/\/+$/, ''))),
-        ),
+        socialProfiles: uniqueEvidence(absoluteLinks.filter((u) => SOCIAL_RE.test(u)).map((u) => ev(u.replace(/\/+$/, '')))),
+        bidPortalLinks: uniqueEvidence(absoluteLinks.filter(isBidPortal).map(ev)),
         signals: findSignals(text, url),
     };
 }
@@ -132,6 +128,16 @@ const NON_ORG_TYPES = new Set([
     'Person',
     'Offer',
     'Product',
+    'Service',
+    'PostalAddress',
+    'ContactPoint',
+    'GeoCoordinates',
+    'Place',
+    'Review',
+    'Rating',
+    'AggregateRating',
+    'Event',
+    'OpeningHoursSpecification',
 ]);
 
 function readJsonLdOrganizations($: CheerioAPI): JsonLdObject[] {
@@ -140,10 +146,13 @@ function readJsonLdOrganizations($: CheerioAPI): JsonLdObject[] {
         if (Array.isArray(node)) return node.forEach(visit);
         if (!node || typeof node !== 'object') return;
         const obj = node as JsonLdObject;
-        if (obj['@graph']) visit(obj['@graph']);
         const types = ([] as unknown[]).concat(obj['@type'] ?? []).map(String);
         if (types.length && !types.every((t) => NON_ORG_TYPES.has(t)) && (obj.name || obj.telephone || obj.address)) {
             out.push(obj);
+        }
+        // Organizations are often nested, e.g. as the `publisher` of a WebPage or inside `@graph`.
+        for (const [key, value] of Object.entries(obj)) {
+            if (key !== 'address' && value && typeof value === 'object') visit(value);
         }
     };
     $('script[type="application/ld+json"]').each((_, el) => {
@@ -179,7 +188,9 @@ function readAddress(jsonLd: JsonLdObject[], url: string): Address | undefined {
 const PHONE_RE = /(?<![\d-])(?:\+?1[\s.-]?)?\(?([2-9]\d{2})\)?[\s.-]?([2-9]\d{2})[\s.-]?(\d{4})(?![\d-])/g;
 
 function phonesFromText(text: string): string[] {
-    return [...text.matchAll(PHONE_RE)].map((m) => `+1${m[1]}${m[2]}${m[3]}`);
+    return [...text.matchAll(PHONE_RE)]
+        .filter((m) => !/\bfax\b[\s:.#-]*$/i.test(text.slice(Math.max(0, m.index - 12), m.index)))
+        .map((m) => `+1${m[1]}${m[2]}${m[3]}`);
 }
 
 /** Normalizes a US phone number to E.164 (+1XXXXXXXXXX); returns undefined for anything else. */
@@ -229,6 +240,28 @@ function snippetAround(text: string, index: number, length: number): string {
 }
 
 // --- helpers --------------------------------------------------------------------------------------
+
+/**
+ * Visible page text with every text node separated by a space, so text from neighbouring elements
+ * (`<li>Oakland</li><li>Berkeley</li>`) is never glued into one word.
+ */
+function visibleText($: CheerioAPI): string {
+    const $body = $('body').clone();
+    $body.find('script, style, noscript, template, svg').remove();
+    const parts: string[] = [];
+    const walk = (nodes: ReturnType<CheerioAPI>) =>
+        nodes.each((_, node) => {
+            if (node.type === 'text') parts.push(node.data);
+            else walk($(node).contents());
+        });
+    walk($body.contents());
+    return parts.join(' ').replace(/\s+/g, ' ').trim();
+}
+
+function isBidPortal(url: string): boolean {
+    const host = new URL(url).hostname.toLowerCase();
+    return BID_PORTAL_HOSTS.some((portal) => host === portal || host.endsWith(`.${portal}`));
+}
 
 const SOCIAL_RE = /^https?:\/\/(?:www\.)?(?:linkedin\.com\/company|facebook\.com|instagram\.com|youtube\.com|x\.com|twitter\.com)\/[^?#]+/i;
 

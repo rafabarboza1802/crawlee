@@ -73,3 +73,36 @@ describe('helpers', () => {
         expect(looksLikeChallenge('<title>Acme</title>')).toBe(false);
     });
 });
+
+describe('review regressions', () => {
+    test('does not glue text from neighbouring elements together', () => {
+        const f = extractPage(
+            '<body><p>info@acme.com</p><p>Next</p><ul><li>Oakland</li><li>Berkeley</li></ul><span>pavers</span><span>Demolition</span></body>',
+            URL_,
+        );
+        expect(values(f.businessEmails)).toEqual(['info@acme.com']);
+        expect(values(f.serviceAreaMentions)).toEqual(expect.arrayContaining(['Oakland', 'Berkeley']));
+        expect(f.signals.map((s) => s.keyword)).toEqual(expect.arrayContaining(['pavers', 'demolition']));
+    });
+
+    test('finds the organization nested inside other JSON-LD nodes', () => {
+        const f = extractPage(
+            `<head><title>Home - Site</title><script type="application/ld+json">
+                {"@type":"WebPage","name":"Home","publisher":{"@type":"Organization","name":"Acme Builders","telephone":"510-555-0100"}}
+            </script></head>`,
+            URL_,
+        );
+        expect(f.companyName).toEqual({ value: 'Acme Builders', source: 'json_ld' });
+        expect(values(f.phones)).toEqual(['+15105550100']);
+    });
+
+    test('splits mailto: links that list several addresses', () => {
+        const f = extractPage('<a href="mailto:info@acme.com,bids@acme.com?subject=Hi">x</a>', URL_);
+        expect(values(f.businessEmails)).toEqual(['info@acme.com', 'bids@acme.com']);
+    });
+
+    test('does not report fax numbers as business phones', () => {
+        const f = extractPage('<p>Phone: (510) 555-0100</p><p>Fax: (510) 555-0101</p>', URL_);
+        expect(values(f.phones)).toEqual(['+15105550100']);
+    });
+});
