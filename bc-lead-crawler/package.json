@@ -9,6 +9,7 @@
     },
     "scripts": {
         "crawl": "tsx src/main.ts",
+        "discover": "tsx src/discover/main.ts",
         "typecheck": "tsc --noEmit",
         "test": "vitest run"
     },

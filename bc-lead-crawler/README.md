@@ -87,12 +87,106 @@ Seed CSV columns: `website` (required), `company_name`, `segment_hint`, `source`
 ## Development
 
 ```bash
-npm test           # unit tests, per-segment extraction tests, and local-server tests of the robots.txt / block / link-filter guardrails
+npm test           # Phase 1 + Phase 2 unit tests, plus local fake-server tests of the crawler guardrails and the DataSF pipeline
 npm run typecheck
 ```
 
+## Phase 2: opportunity discovery from public permits
+
+`npm run discover` turns official permit records into scored construction opportunities. It is **read-only**:
+it never emails, texts, calls or submits anything. Output goes to `output/` for review, then to agency-agents.
+
+### Sources
+
+| Source id | Jurisdiction | Data | Status |
+|---|---|---|---|
+| `sf-dbi` | San Francisco | DataSF [Building Permits `i98e-djp9`](https://data.sfgov.org/d/i98e-djp9) + [Building Permits Contacts `3pee-9qhc`](https://data.sfgov.org/d/3pee-9qhc) (public domain) | active |
+| `contra-costa`, `alameda`, `san-mateo`, `santa-clara`, `marin`, `solano`, `sonoma`, `napa` | | | planned (`--list-sources`) |
+
+Only official open-data APIs are used: robots.txt is checked first (5xx/unreachable = stop), requests identify as
+`BestConstructionBot`, pages are fetched 1,000 rows at a time with pauses, 429/5xx are retried with back-off and
+401/403 stop the run. Set `SOCRATA_APP_TOKEN` (free from the portal) for higher rate limits.
+
+### What each opportunity contains (`src/discover/types.ts`)
+
+Permit number/type/status/dates, project description, address, parcel, neighborhood, coordinates, estimated value
+(revised cost when published), existing/proposed use and units, **business** contacts (contractor, owner entity,
+architect, engineer — firm name and licence only), matched Best Construction services with the words that
+triggered them, lead segment + reason, contact policy, score 0–100 with every point explained, related permits on
+the same property, `is_new`, and the public `record_url` the data came from.
+
+### Pipeline
+
+1. Fetch permits filed or updated in the last `--days` (default 30).
+2. Drop duplicates, inactive permits (complete/expired/cancelled/withdrawn…), sign permits and other trades
+   (reroof, solar, windows, electrical…).
+3. Match services: demolition, excavation, grading, concrete, pavers/hardscape, paving/driveways, drainage,
+   retaining walls, site work, land clearing, hauling/debris, remodel, ADU, general construction
+   (`src/discover/services.ts`). Soft-story retrofits count as foundation (concrete/excavation) work.
+4. Look up business contacts for the remaining permits — the query asks only for
+   `permit_number, role, firm_name, license1`, so people's names are never downloaded. Owners are kept only when
+   they are clearly businesses (LLC, developer, agency…); individuals and family trusts are dropped.
+5. Group permits on the same parcel (e.g. demolition + new building) into one project.
+6. Classify the lead segment and score; flag what is new since the last run (`output/discovery-state.json`).
+
+### Scoring (`src/discover/score.ts`)
+
+| Factor | Max | Rule |
+|---|---|---|
+| Service fit | 40 | Best matched service (core site work 33–35, hardscape/paving 32, concrete 30, ADU 28, new build 22, remodel 15) + 2 per extra service |
+| Project value | 20 | ≥$5M 20 · ≥$1M 17 · ≥$250K 13 · ≥$75K 9 · ≥$15K 5 · smaller 2 · not published 6 (neutral) |
+| Stage | 15 | Filed/plan check/approved 15 (bid window open) · issued 12 (subs being hired) · stalled 4 |
+| Recency | 15 | Last activity ≤14 days 15 · ≤30 12 · ≤60 9 · ≤90 6 · ≤180 3 |
+| Who to approach | 10 | Named contractor/owner business 10 · architect/engineer 6 · source has no contacts 4 · none listed 2 |
+| Adjustments | | +3 several permits on the property · −5 revision permits · inactive capped at 10 · **homeowner-only projects capped at 40** |
+
+Bands: high ≥70, medium 45–69, low <45. `--min-score` (default 40) hides the rest.
+
+### Lead segments and homeowner privacy
+
+| Segment | Rule |
+|---|---|
+| `public_construction` | Owner is a public agency |
+| `developer_home_builder` | New construction adding units, or new build by an owner business |
+| `commercial_real_estate` | Office/retail/industrial/other commercial use |
+| `property_management` | Apartments/condos or 3+ units (incl. soft-story retrofits) |
+| `general_contractor` | Homeowner or other project with a named contractor: approach the contractor for sub work |
+| `residential` | Homeowner project with no business named: **market signal only** (`contact_policy: no_direct_contact`) |
+
+Homeowners are never enriched or targeted. Their permits stay in the data only as public signals, approached
+through their licensed contractor when one is published.
+
+### Testing with real public records
+
+1. Allow `data.sfgov.org` on the machine/network you run from (no account needed). If you sit behind an HTTP proxy,
+   Node needs `NODE_USE_ENV_PROXY=1`.
+2. Check the field names against the live datasets (reads column metadata only):
+   ```bash
+   npm run discover -- --probe
+   ```
+   `i98e-djp9` must list `permit_number, description, status, filed_date, status_date` (plus the optional fields
+   used in `src/discover/sources/sf.ts`); `3pee-9qhc` must list `permit_number, role, firm_name, license1`.
+   If a name differs, the run stops with a schema error listing the real columns — fix the mapping in `sf.ts`.
+3. Small first run, then a normal one:
+   ```bash
+   npm run discover -- --days 7 --max-rows 500 --min-score 0
+   npm run discover -- --days 30
+   ```
+4. Spot-check: open 5–10 rows of `output/opportunities-sf-dbi-<date>.csv`, follow `record_url`, and compare
+   the description, status and value with the DataSF record. Run again the next day: only new projects are `NEW`.
+5. Offline alternative: save a DataSF API response from a browser, e.g.
+   `https://data.sfgov.org/resource/i98e-djp9.json?$where=filed_date>='2026-09-15T00:00:00'&$limit=1000`, then
+   `npm run discover -- --from-file saved.json --days 30` (contacts are skipped offline).
+
+### Adding a jurisdiction
+
+Find the official permit dataset on the city/county open-data portal. For a Socrata portal, copy
+`src/discover/sources/sf.ts`, change the base URL, dataset IDs and field mapping, register it in
+`src/discover/sources/registry.ts`, add a fixture-based test, and run `--probe` first. Permit-search websites
+without an open-data export (Accela/eTRAKiT search forms, logins) are out of scope.
+
 ## Next phases
 
-1. Public permit feed (DataSF building permits): business-entity contractors/owners with demolition or new-construction permits become seeds with a concrete signal.
+1. More jurisdictions (verify each county's open-data permit dataset first).
 2. Public bid notices readable without login.
-3. Playwright fallback for public pages that only render with JavaScript (no stealth).
+3. Feed named contractors/developers from opportunities into the Phase 1 website crawler as seeds.

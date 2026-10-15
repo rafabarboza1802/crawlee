@@ -25,7 +25,7 @@ export function toCsv(rows: Prospect[]): string {
  * Quotes a CSV cell and neutralizes values that a spreadsheet would run as a formula
  * (scraped text is untrusted — e.g. a page title of `=HYPERLINK(...)`).
  */
-function csvCell(value: string): string {
+export function csvCell(value: string): string {
     const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
     return /[",\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 }
