@@ -188,10 +188,38 @@ Find the official permit dataset on the city/county open-data portal. For a Socr
 `src/discover/sources/registry.ts`, add a fixture-based test, and run `--probe` first. Permit-search websites
 without an open-data export (Accela/eTRAKiT search forms, logins) are out of scope.
 
+## Phase 3: decision-maker enrichment — dry run only
+
+Design: [docs/phase3-decision-makers.md](docs/phase3-decision-makers.md). **This build plans Apollo lookups but cannot
+execute them**: `--approve` and any run without `--dry-run` are refused, and no enrichment module makes network
+requests (a test enforces it). LinkedIn is never fetched; only manual search links are produced.
+
+```bash
+npm run enrich -- --dry-run --input output/opportunities-sf-dbi-<date>.jsonl
+```
+
+1. Takes Phase 2 opportunities scoring ≥ 70 (configurable). Homeowner projects, public agencies and permits with no
+   contractor or business owner named are listed as excluded and never looked up.
+2. Groups them by company (contractor first, else a business owner), best score first, max 25 companies per run.
+   Names are cleaned for searching (legal suffix, "*See Notes*", DataSF's 40-character truncation).
+3. Plans, per company: Apollo organization search (website, company phone, LinkedIn company page) → people search for
+   the priority titles (estimator/preconstruction, PM, construction manager, superintendent, purchasing,
+   owner/president/operations; property-manager and developer titles for owner companies) → business-email
+   enrichment for the primary contact only. Personal emails and phone reveals are off.
+4. Estimates credits (expected and maximum) against the monthly cap and writes:
+   - `output/contact-plan-<date>.csv|jsonl` — one row per qualified opportunity: address, description, value, score,
+     company, licence, reason to contact, recommended pitch, target titles, manual LinkedIn search link; person
+     fields stay empty until an approved lookup;
+   - `output/enrich-estimate-<planId>.json` — every request that a paid run would send, with its cost and condition.
+
+Settings: copy `enrich.config.example.json` to `enrich.config.json` and set `usdPerCredit` to see dollar amounts.
+Credit costs per endpoint are assumptions to verify in your Apollo account. Do-not-contact list: `suppression.txt`
+(one company per line, git-ignored).
+
 ## Next phases
 
-1. Phase 3 — decision-maker enrichment (Apollo API + public leadership pages, strict budget, compliant LinkedIn use):
-   design in [docs/phase3-decision-makers.md](docs/phase3-decision-makers.md), not implemented yet.
+1. Phase 3 paid step: execute an approved estimate (Apollo API key, live balance check, cache, ledger), then the
+   free website team-page provider.
 2. More jurisdictions (verify each county's open-data permit dataset first).
 3. Public bid notices readable without login.
 4. Feed named contractors/developers from opportunities into the Phase 1 website crawler as seeds.

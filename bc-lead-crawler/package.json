@@ -11,7 +11,8 @@
         "crawl": "tsx src/main.ts",
         "discover": "tsx src/discover/main.ts",
         "typecheck": "tsc --noEmit",
-        "test": "vitest run"
+        "test": "vitest run",
+        "enrich": "tsx src/enrich/main.ts"
     },
     "dependencies": {
         "cheerio": "1.0.0-rc.12",

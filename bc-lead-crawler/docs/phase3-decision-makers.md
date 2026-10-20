@@ -1,6 +1,6 @@
 # Phase 3 — Decision-Maker & LinkedIn Enrichment Engine (design)
 
-Status: **design approved, not implemented.** No paid API calls have been made.
+Status: **dry run implemented** (`npm run enrich -- --dry-run`); paid execution not implemented. No paid API calls have been made.
 Last updated: 2026-10-20.
 
 ## 1. Goal
