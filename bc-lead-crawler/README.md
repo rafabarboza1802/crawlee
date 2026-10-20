@@ -187,6 +187,8 @@ without an open-data export (Accela/eTRAKiT search forms, logins) are out of sco
 
 ## Next phases
 
-1. More jurisdictions (verify each county's open-data permit dataset first).
-2. Public bid notices readable without login.
-3. Feed named contractors/developers from opportunities into the Phase 1 website crawler as seeds.
+1. Phase 3 — decision-maker enrichment (Apollo API + public leadership pages, strict budget, compliant LinkedIn use):
+   design in [docs/phase3-decision-makers.md](docs/phase3-decision-makers.md), not implemented yet.
+2. More jurisdictions (verify each county's open-data permit dataset first).
+3. Public bid notices readable without login.
+4. Feed named contractors/developers from opportunities into the Phase 1 website crawler as seeds.
