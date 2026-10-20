@@ -9,7 +9,8 @@ import type { PermitSource, SourceContext } from './source.js';
  * - Building Permits Contacts `3pee-9qhc` — contacts per permit; we request only permit_number, role,
  *   firm_name and license1, so personal name and address columns are never downloaded.
  */
-const BASE_URL = 'https://data.sfgov.org';
+/** DataSF moved from data.sfgov.org (which now redirects) to data.sf.gov in 2026. */
+const BASE_URL = 'https://data.sf.gov';
 const PERMITS = 'i98e-djp9';
 const CONTACTS = '3pee-9qhc';
 const CONTACT_FIELDS = ['permit_number', 'role', 'firm_name', 'license1'] as const;

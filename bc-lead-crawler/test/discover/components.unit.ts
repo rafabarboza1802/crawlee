@@ -20,7 +20,7 @@ const permit = (overrides: Partial<NormalizedPermit> = {}): NormalizedPermit => 
     status: 'filed',
     city: 'San Francisco',
     county: 'San Francisco',
-    sourceUrl: 'https://data.sfgov.org/resource/i98e-djp9.json?permit_number=1',
+    sourceUrl: 'https://data.sf.gov/resource/i98e-djp9.json?permit_number=1',
     ...overrides,
 });
 
@@ -87,7 +87,7 @@ describe('businesses', () => {
     });
 
     test('uses firm names only and drops owners that are not businesses', () => {
-        const url = 'https://data.sfgov.org/resource/3pee-9qhc.json?permit_number=1';
+        const url = 'https://data.sf.gov/resource/3pee-9qhc.json?permit_number=1';
         expect(
             toBusinesses(
                 [
@@ -182,7 +182,7 @@ describe('SF source', () => {
             latitude: 37.7599,
             longitude: -122.4194,
             city: 'San Francisco',
-            sourceUrl: 'https://data.sfgov.org/resource/i98e-djp9.json?permit_number=202610010002',
+            sourceUrl: 'https://data.sf.gov/resource/i98e-djp9.json?permit_number=202610010002',
         });
         expect(p.filedDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     });

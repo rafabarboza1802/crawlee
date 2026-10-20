@@ -54,6 +54,46 @@ export function projectKey(permit: NormalizedPermit): string {
     return `${permit.sourceId}:${where.replace(/\s+/g, '-').toLowerCase()}`;
 }
 
+/** Permits filed for adjacent parcels on the same day with near-consecutive numbers are one project. */
+function filedTogether(a: NormalizedPermit, b: NormalizedPermit): boolean {
+    const block = (p: NormalizedPermit) => p.parcel?.split('/')[0];
+    const day = (p: NormalizedPermit) => p.filedDate ?? p.statusDate;
+    if (!block(a) || block(a) !== block(b) || !day(a) || day(a) !== day(b)) return false;
+    if ((a.permitType ?? '') !== (b.permitType ?? '')) return false;
+    if (!/^\d+$/.test(a.permitNumber) || !/^\d+$/.test(b.permitNumber)) return false;
+    return Math.abs(Number(a.permitNumber) - Number(b.permitNumber)) <= 5;
+}
+
+/**
+ * Merges project groups whose permits were filed together for adjacent parcels (e.g. two demolition permits for
+ * neighbouring lots of one site). The merged group keeps the first key in sort order.
+ */
+export function mergeAdjacentProjects<T = NormalizedPermit>(
+    groups: Map<string, T[]>,
+    permitOf: (item: T) => NormalizedPermit = (item) => item as unknown as NormalizedPermit,
+): Map<string, T[]> {
+    const keys = [...groups.keys()].sort();
+    const parent = new Map(keys.map((k) => [k, k]));
+    const find = (k: string): string => (parent.get(k) === k ? k : find(parent.get(k)!));
+    // Only groups on the same assessor block can be adjacent, so compare within blocks.
+    const byBlock = Map.groupBy(keys, (k) => permitOf(groups.get(k)![0]!).parcel?.split('/')[0] ?? `none:${k}`);
+    for (const blockKeys of byBlock.values()) {
+        for (let i = 0; i < blockKeys.length; i++) {
+            for (let j = i + 1; j < blockKeys.length; j++) {
+                const a = groups.get(blockKeys[i]!)!.map(permitOf);
+                const b = groups.get(blockKeys[j]!)!.map(permitOf);
+                if (a.some((pa) => b.some((pb) => filedTogether(pa, pb)))) {
+                    const [ri, rj] = [find(blockKeys[i]!), find(blockKeys[j]!)];
+                    if (ri !== rj) parent.set(rj > ri ? rj : ri, rj > ri ? ri : rj);
+                }
+            }
+        }
+    }
+    const merged = new Map<string, T[]>();
+    for (const k of keys) merged.set(find(k), [...(merged.get(find(k)) ?? []), ...groups.get(k)!]);
+    return merged;
+}
+
 /**
  * Discovers construction opportunities from one permit source. Read-only: it never contacts anyone.
  */
@@ -117,8 +157,9 @@ export async function discover(options: DiscoverOptions): Promise<DiscoverResult
         return { permit, services, businesses, preliminary };
     });
 
-    // 4. Group permits on the same parcel into one project, scored on the combined picture.
-    const groups = Map.groupBy(candidates, (c) => projectKey(c.permit));
+    // 4. Group permits on the same parcel (or adjacent parcels filed together) into one project,
+    //    scored on the combined picture.
+    const groups = mergeAdjacentProjects(Map.groupBy(candidates, (c) => projectKey(c.permit)), (c) => c.permit);
     const opportunities: Opportunity[] = [];
     for (const [key, group] of groups) {
         group.sort((a, b) => b.preliminary - a.preliminary || (lastActivity(b.permit)?.getTime() ?? 0) - (lastActivity(a.permit)?.getTime() ?? 0));

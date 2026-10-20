@@ -5,6 +5,7 @@ import { SegmentGroupSchema } from '../schema.js';
 /** Best Construction services an opportunity can be matched to. */
 export const SERVICES = [
     'demolition',
+    'interior_demolition',
     'excavation',
     'grading',
     'concrete',

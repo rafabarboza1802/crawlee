@@ -100,7 +100,7 @@ it never emails, texts, calls or submits anything. Output goes to `output/` for 
 
 | Source id | Jurisdiction | Data | Status |
 |---|---|---|---|
-| `sf-dbi` | San Francisco | DataSF [Building Permits `i98e-djp9`](https://data.sfgov.org/d/i98e-djp9) + [Building Permits Contacts `3pee-9qhc`](https://data.sfgov.org/d/3pee-9qhc) (public domain) | active |
+| `sf-dbi` | San Francisco | DataSF [Building Permits `i98e-djp9`](https://data.sf.gov/d/i98e-djp9) + [Building Permits Contacts `3pee-9qhc`](https://data.sf.gov/d/3pee-9qhc) (public domain; DataSF moved from `data.sfgov.org` to `data.sf.gov`) | active |
 | `contra-costa`, `alameda`, `san-mateo`, `santa-clara`, `marin`, `solano`, `sonoma`, `napa` | | | planned (`--list-sources`) |
 
 Only official open-data APIs are used: robots.txt is checked first (5xx/unreachable = stop), requests identify as
@@ -120,20 +120,23 @@ the same property, `is_new`, and the public `record_url` the data came from.
 1. Fetch permits filed or updated in the last `--days` (default 30).
 2. Drop duplicates, inactive permits (complete/expired/cancelled/withdrawn…), sign permits and other trades
    (reroof, solar, windows, electrical…).
-3. Match services: demolition, excavation, grading, concrete, pavers/hardscape, paving/driveways, drainage,
+3. Match services: demolition (buildings, structures, site elements), interior demolition (strip-outs: partitions,
+   drywall, ductwork, bathrooms — scored much lower), excavation, grading, concrete, pavers/hardscape, paving/driveways, drainage,
    retaining walls, site work, land clearing, hauling/debris, remodel, ADU, general construction
    (`src/discover/services.ts`). Soft-story retrofits count as foundation (concrete/excavation) work.
 4. Look up business contacts for the remaining permits — the query asks only for
-   `permit_number, role, firm_name, license1`, so people's names are never downloaded. Owners are kept only when
-   they are clearly businesses (LLC, developer, agency…); individuals and family trusts are dropped.
-5. Group permits on the same parcel (e.g. demolition + new building) into one project.
+   `permit_number, role, firm_name, license1`, so people's names are never downloaded. A firm name is kept only when
+   it looks like a company: "Owner"/"Owner Builder" (the homeowner did the work) and person-like names ("Jane Doe",
+   "J. Doe AIA") are dropped. Owners are kept only when they are clearly businesses (LLC, developer, agency…).
+5. Group permits on the same parcel (e.g. demolition + new building) into one project, plus permits filed the same
+   day for adjacent parcels on the same block with near-consecutive numbers (one site split over several lots).
 6. Classify the lead segment and score; flag what is new since the last run (`output/discovery-state.json`).
 
 ### Scoring (`src/discover/score.ts`)
 
 | Factor | Max | Rule |
 |---|---|---|
-| Service fit | 40 | Best matched service (core site work 33–35, hardscape/paving 32, concrete 30, ADU 28, new build 22, remodel 15) + 2 per extra service |
+| Service fit | 40 | Best matched service (core site work 33–35, hardscape/paving 32, concrete 30, ADU 28, new build 22, interior demolition 18, remodel 15) + 2 per extra service |
 | Project value | 20 | ≥$5M 20 · ≥$1M 17 · ≥$250K 13 · ≥$75K 9 · ≥$15K 5 · smaller 2 · not published 6 (neutral) |
 | Stage | 15 | Filed/plan check/approved 15 (bid window open) · issued 12 (subs being hired) · stalled 4 |
 | Recency | 15 | Last activity ≤14 days 15 · ≤30 12 · ≤60 9 · ≤90 6 · ≤180 3 |
@@ -158,7 +161,7 @@ through their licensed contractor when one is published.
 
 ### Testing with real public records
 
-1. Allow `data.sfgov.org` on the machine/network you run from (no account needed). If you sit behind an HTTP proxy,
+1. Allow `data.sf.gov` (and `data.sfgov.org`, which redirects to it) on the machine/network you run from (no account needed). If you sit behind an HTTP proxy,
    Node needs `NODE_USE_ENV_PROXY=1`.
 2. Check the field names against the live datasets (reads column metadata only):
    ```bash
@@ -175,7 +178,7 @@ through their licensed contractor when one is published.
 4. Spot-check: open 5–10 rows of `output/opportunities-sf-dbi-<date>.csv`, follow `record_url`, and compare
    the description, status and value with the DataSF record. Run again the next day: only new projects are `NEW`.
 5. Offline alternative: save a DataSF API response from a browser, e.g.
-   `https://data.sfgov.org/resource/i98e-djp9.json?$where=filed_date>='2026-09-15T00:00:00'&$limit=1000`, then
+   `https://data.sf.gov/resource/i98e-djp9.json?$where=filed_date>='2026-09-15T00:00:00'&$limit=1000`, then
    `npm run discover -- --from-file saved.json --days 30` (contacts are skipped offline).
 
 ### Adding a jurisdiction

@@ -8,6 +8,8 @@ export interface ServiceMatch {
 /** Keyword patterns per service, matched against the permit description and permit type. */
 const SERVICE_PATTERNS: Record<Service, RegExp[]> = {
     demolition: [/\bdemo(?:lition|lish(?:ed|ing)?)?\b/i, /\btear[\s-]?down\b/i, /\braze\b/i],
+    // Derived from `demolition` when the scope is an interior strip-out (see INTERIOR_ONLY below).
+    interior_demolition: [],
     excavation: [
         /\bexcavat\w*/i,
         /\bshoring\b/i,
@@ -18,7 +20,7 @@ const SERVICE_PATTERNS: Record<Service, RegExp[]> = {
     ],
     grading: [/\bgrading\b/i, /\bre-?grad(?:e|ing)\b/i, /\bfill\b(?! (?:in|out))/i, /\bquarry\b/i],
     concrete: [/\bconcrete\b/i, /\bfoundation\w*/i, /\bslab\b/i, /\bfootings?\b/i, /\bgrade beams?\b/i],
-    pavers_hardscape: [/\bpavers?\b/i, /\bhardscap\w*/i, /\bpatio\b/i, /\bwalkways?\b/i, /\bpathways?\b/i, /\bcourtyard\b/i, /\blandscap\w*/i, /\bexterior stairs?\b/i],
+    pavers_hardscape: [/\bpavers?\b/i, /\bhardscap\w*/i, /\bpatio\b/i, /\bwalkways?\b/i, /\bpathways?\b/i, /\bcourtyard\b/i, /\blandscap\w*/i, /\b(?:concrete|masonry|stone|brick|paver) (?:stairs|steps)\b/i],
     paving: [/\bdriveways?\b/i, /\bparking (?:lot|area|pad|stalls?)\b/i, /\basphalt\b/i, /\bpaving\b/i, /\bcurb cut\b/i, /\bsidewalks?\b/i],
     drainage: [/\bdrainage\b/i, /\bstorm ?water\b/i, /\bfrench drains?\b/i, /\bsump pumps?\b/i, /\bcatch basins?\b/i, /\bbio-?retention\b/i, /\bpermeable\b/i],
     retaining_walls: [/\bretaining[\s-]walls?\b/i],
@@ -49,6 +51,16 @@ const NOT_OUR_WORK = [
     /\bpaint(?:ing)?\b/i,
     /\belectrical\b|\bplumbing\b|\bhvac\b|\bmechanical\b/i,
 ];
+
+/**
+ * Demolition of a building, structure or site element. Any other "demo" (partitions, drywall, ductwork, bathrooms,
+ * tenant fit-outs) is an interior strip-out and is reported as `interior_demolition`.
+ */
+const BUILDING_DEMOLITION =
+    /\b(?:demo\w*|tear[\s-]?down|raze)\b[^.;]{0,40}?\b(?:buildings?|structures?|house|dwelling|garage|shed|carport|deck|patio|driveway|fence|retaining walls?|pool|foundations?|slab|cottage|residence|\d[\s-]?stor(?:y|ey)|stor(?:y|ey))\b/i;
+
+/** "enclose/infill patio" is interior space, not hardscape. */
+const ENCLOSED_PATIO = /\b(?:enclos\w*|infill|convert\w*)\b[^.;]{0,25}\bpatio\b/i;
 
 /** Services that, when matched, mean the permit is a strong fit regardless of trade noise. */
 const STRONG: ReadonlySet<Service> = new Set([
@@ -100,6 +112,15 @@ export function matchServices(permit: Pick<NormalizedPermit, 'description' | 'pe
         add('excavation', 'soft-story retrofit (new foundations)');
     }
 
+    // Interior strip-outs are a smaller, different job from demolishing a building or site element.
+    if (found.has('demolition') && !/demolition/.test(type) && !BUILDING_DEMOLITION.test(text)) {
+        found.set('interior_demolition', found.get('demolition')!);
+        found.delete('demolition');
+    }
+    if (found.get('pavers_hardscape')?.size === 1 && found.get('pavers_hardscape')!.has('patio') && ENCLOSED_PATIO.test(text)) {
+        found.delete('pavers_hardscape');
+    }
+
     // Implied work.
     if (found.has('demolition')) add('hauling_debris', 'implied by demolition');
     if (found.has('general_construction') && /new construction/.test(type)) add('site_work', 'implied by new construction');
@@ -121,6 +142,7 @@ export function matchServices(permit: Pick<NormalizedPermit, 'description' | 'pe
 /** Score tier of each service (points for the service-fit factor). */
 export const SERVICE_POINTS: Record<Service, number> = {
     demolition: 35,
+    interior_demolition: 18,
     excavation: 35,
     grading: 35,
     retaining_walls: 35,
@@ -138,6 +160,7 @@ export const SERVICE_POINTS: Record<Service, number> = {
 
 export const SERVICE_LABELS: Record<Service, string> = {
     demolition: 'demolition',
+    interior_demolition: 'interior demolition',
     excavation: 'excavation',
     grading: 'grading',
     concrete: 'concrete',
