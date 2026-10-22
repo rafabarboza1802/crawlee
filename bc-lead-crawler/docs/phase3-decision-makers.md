@@ -1,6 +1,6 @@
 # Phase 3 — Decision-Maker & LinkedIn Enrichment Engine (design)
 
-Status: **dry run implemented** (`npm run enrich -- --dry-run`); paid execution not implemented. No paid API calls have been made.
+Status: **dry run and approved execution implemented** (`npm run enrich -- --dry-run` / `--approve <planId>`); the website team-page provider is not built yet. Live Apollo credit-balance checking is not implemented: spending is capped by the local ledger, so keep automatic credit purchases off in Apollo.
 Last updated: 2026-10-20.
 
 ## 1. Goal

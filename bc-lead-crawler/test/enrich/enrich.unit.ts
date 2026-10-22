@@ -199,22 +199,28 @@ describe('plan and estimate', () => {
 });
 
 describe('CLI', () => {
-    const cli = (args: string[]) => run('npx', ['tsx', 'src/enrich/main.ts', ...args], { cwd: new URL('../..', import.meta.url).pathname });
+    // Tests never use the real key or reach api.apollo.io.
+    const env = { ...process.env, APOLLO_API_KEY: 'test-key', APOLLO_BASE_URL: 'http://127.0.0.1:9/api/v1' };
+    const cli = (args: string[]) => run('npx', ['tsx', 'src/enrich/main.ts', ...args], { cwd: new URL('../..', import.meta.url).pathname, env });
 
-    test('refuses to run without --dry-run, and refuses --approve', async () => {
-        await expect(cli([])).rejects.toMatchObject({ stderr: expect.stringMatching(/Paid Apollo lookups are not enabled/) });
-        await expect(cli(['--approve', 'abc123'])).rejects.toMatchObject({ stderr: expect.stringMatching(/not enabled/) });
+    test('requires exactly one of --dry-run or --approve', async () => {
+        await expect(cli([])).rejects.toMatchObject({ stderr: expect.stringMatching(/Usage:/) });
+        await expect(cli(['--dry-run', '--approve', 'x', '--input', 'x'])).rejects.toMatchObject({ stderr: expect.stringMatching(/Usage:/) });
     });
 
-    test('dry run writes the plan and the estimate', async () => {
+    test('dry run writes the plan and the estimate; approval of a different plan id is refused before any call', async () => {
         const dir = await mkdtemp(join(tmpdir(), 'enrich-'));
         const input = join(dir, 'opps.jsonl');
         await writeFile(input, [opp(93, [{ name: 'Nolan Construction Inc' }]), opp(40, [{}])].map((o) => JSON.stringify(o)).join('\n'));
-        const { stdout } = await cli(['--dry-run', '--input', input, '--out', dir, '--config', join(dir, 'none.json')]);
+        const common = ['--input', input, '--out', dir, '--config', join(dir, 'none.json'), '--cache', join(dir, 'cache.json'), '--ledger', join(dir, 'ledger.json')];
+        const { stdout } = await cli(['--dry-run', ...common]);
         expect(stdout).toMatch(/DRY RUN — no Apollo calls were made, no credits were used/);
         expect(stdout).toMatch(/credits: 2 expected, 2 maximum/);
+        expect(stdout).toMatch(/npm run enrich -- --approve [0-9a-f]{12}/);
         const files = await readdir(dir);
         expect(files.some((f) => f.startsWith('contact-plan-') && f.endsWith('.csv'))).toBe(true);
         expect(files.some((f) => f.startsWith('enrich-estimate-'))).toBe(true);
+        await expect(cli(['--approve', '000000000000', ...common])).rejects.toMatchObject({ stderr: expect.stringMatching(/plan changed/) });
+        expect(await readdir(dir)).not.toContain('ledger.json');
     });
 });

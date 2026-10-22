@@ -136,7 +136,7 @@ export function estimate(plans: AccountPlan[], config: EnrichConfig, now: Date):
             `People match = ${config.apolloCredits.peopleMatch} credit/person (credit-consuming; amount to verify).`,
             'Phone reveals and personal emails are disabled; business phone comes from the organization record.',
             config.usdPerCredit === null ? 'USD not shown: set usdPerCredit in enrich.config.json.' : `USD at $${config.usdPerCredit}/credit.`,
-            'The live Apollo credit balance is checked before any paid run.',
+            'Spending is capped by the local ledger (output/enrich-ledger.json); keep automatic credit purchases off in Apollo.',
         ],
     };
 }

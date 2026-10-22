@@ -5,6 +5,7 @@ import type { Opportunity } from '../discover/types.js';
 import type { Account, Exclusion } from './accounts.js';
 import { linkedInCompanySearchUrl, linkedInPeopleSearchUrl } from './linkedin.js';
 import { contactReason, recommendedPitch } from './pitch.js';
+import type { AccountResult } from './execute.js';
 import type { AccountPlan } from './plan.js';
 import { roleTargets } from './roles.js';
 
@@ -37,6 +38,13 @@ export const ContactPlanRowSchema = z.object({
     account_id: z.string().nullable(),
     account_credits_expected: z.number(),
     account_credits_max: z.number(),
+    /** Filled in by an approved paid run. */
+    enrichment_status: z.string().optional(),
+    enrichment_note: z.string().optional(),
+    company_match_score: z.number().optional(),
+    decision_maker_role: z.string().optional(),
+    email_status: z.string().optional(),
+    backup_contacts: z.array(z.object({ name: z.string(), title: z.string().optional(), linkedin_url: z.string().optional() })).optional(),
 });
 export type ContactPlanRow = z.infer<typeof ContactPlanRowSchema>;
 
@@ -106,10 +114,35 @@ export function rowForExclusion(e: Exclusion): ContactPlanRow {
     });
 }
 
+/** Fills contact-plan rows with the results of an approved paid run. */
+export function applyResults(rows: ContactPlanRow[], results: AccountResult[]): ContactPlanRow[] {
+    const byAccount = new Map(results.map((r) => [r.accountId, r]));
+    return rows.map((row) => {
+        const r = row.account_id ? byAccount.get(row.account_id) : undefined;
+        if (!r) return row;
+        const p = r.primary;
+        return ContactPlanRowSchema.parse({
+            ...row,
+            enrichment_status: r.status,
+            ...(r.note ? { enrichment_note: r.note } : {}),
+            ...(r.org ? { company_match_score: r.org.matchScore } : {}),
+            company_website: r.org?.website ?? (r.org?.domain ? `https://${r.org.domain}` : row.company_website),
+            company_phone: r.org?.phone ?? row.company_phone,
+            decision_maker_name: p?.name ?? null,
+            decision_maker_title: p?.title ?? null,
+            ...(p ? { decision_maker_role: p.roleCategory } : {}),
+            business_email: p?.email ?? null,
+            ...(p ? { email_status: p.email ? 'verified' : 'not_available' } : {}),
+            linkedin_profile_url: p?.linkedinUrl ?? null,
+            backup_contacts: r.backups.map((b) => ({ name: b.name, ...(b.title ? { title: b.title } : {}), ...(b.linkedinUrl ? { linkedin_url: b.linkedinUrl } : {}) })),
+        });
+    });
+}
+
 const PENDING_TEXT = '(pending approved lookup)';
 
 export function contactPlanToCsv(rows: ContactPlanRow[]): string {
-    const pending = (v: string | null, r: ContactPlanRow) => v ?? (r.status === 'excluded' ? '' : PENDING_TEXT);
+    const pending = (v: string | null, r: ContactPlanRow) => v ?? (r.status === 'excluded' || r.enrichment_status ? '' : PENDING_TEXT);
     const columns: [string, (r: ContactPlanRow) => string][] = [
         ['status', (r) => r.status],
         ['opportunity_score', (r) => String(r.opportunity_score)],
@@ -127,6 +160,8 @@ export function contactPlanToCsv(rows: ContactPlanRow[]): string {
         ['business_email', (r) => pending(r.business_email, r)],
         ['linkedin_profile_url', (r) => pending(r.linkedin_profile_url, r)],
         ['linkedin_manual_search_url', (r) => r.linkedin_manual_search_url ?? ''],
+        ['enrichment_status', (r) => [r.enrichment_status, r.enrichment_note].filter(Boolean).join(': ')],
+        ['backup_contacts', (r) => (r.backup_contacts ?? []).map((b) => [b.name, b.title].filter(Boolean).join(', ')).join('; ')],
         ['target_titles', (r) => r.target_titles.join('; ')],
         ['reason_to_contact', (r) => r.reason_to_contact ?? r.status_reason ?? ''],
         ['recommended_pitch', (r) => r.recommended_pitch ?? ''],
