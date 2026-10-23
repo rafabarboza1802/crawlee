@@ -11,7 +11,7 @@ import { roleTargets } from './roles.js';
 
 /** One qualified opportunity with its contact plan. Person fields stay null until an approved paid lookup fills them. */
 export const ContactPlanRowSchema = z.object({
-    status: z.enum(['awaiting_approval', 'deferred_run_cap', 'blocked_competitor', 'manual_review', 'excluded']),
+    status: z.enum(['awaiting_approval', 'deferred_run_cap', 'blocked_competitor', 'do_not_enrich', 'manual_review', 'excluded']),
     status_reason: z.string().optional(),
     opportunity_id: z.string(),
     opportunity_score: z.number(),
@@ -76,11 +76,12 @@ const PENDING = {
     linkedin_profile_url: null,
 };
 
-type AccountStatus = 'awaiting_approval' | 'deferred_run_cap' | 'blocked_competitor' | 'manual_review';
+type AccountStatus = 'awaiting_approval' | 'deferred_run_cap' | 'blocked_competitor' | 'do_not_enrich' | 'manual_review';
 
 const STATUS_REASON: Partial<Record<AccountStatus, string>> = {
     deferred_run_cap: 'Over the per-run company cap; next run',
     blocked_competitor: 'Blocked by the buyer gate: competitor or not a buyer. No Apollo credits used.',
+    do_not_enrich: 'Owner decision: do not enrich (not the bidding contact). No Apollo credits used.',
     manual_review: 'Stopped for manual review by the buyer gate. No Apollo credits used.',
 };
 

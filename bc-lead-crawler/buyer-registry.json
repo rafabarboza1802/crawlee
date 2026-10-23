@@ -5,7 +5,9 @@
         {
             "name": "Cahill Contractors",
             "classification": "buyer",
-            "aliases": ["cahill contractors"],
+            "aliases": [
+                "cahill contractors"
+            ],
             "website": "https://www.cahill-sf.com",
             "reason": "Large San Francisco GC (since 1911) that bids work out to subcontractors through its own trade portal; managing partner for trade bidding on the Cahill/Guzman JV senior housing project.",
             "scope": "Site demolition, excavation/grading, site utilities, hauling, site hardscape. Not structural concrete (Cahill self-performs concrete, rough carpentry and framing where beneficial).",
@@ -13,84 +15,471 @@
                 "https://trade.cahill-sf.com/?p=5280",
                 "https://trade.cahill-sf.com/category/bidding-q1-2026/early-trades-only-bidding-q1-2026/",
                 "https://www.aecplustech.com/companies/cahill-contractors",
-                "Sitework bid packages not yet confirmed on the trade portal; accepted by owner 2026-10-22"
+                "Sitework bid packages not yet confirmed on the trade portal; accepted by owner 2026-10-22",
+                "SF YIMBY: Cahill/Guzman JV also building 160 Freelon St (86 affordable units, completion mid-2027) https://sfyimby.com/category/guzman-construction-group"
             ],
             "decidedBy": "owner",
             "decided": "2026-10-22"
         },
         {
+            "name": "Guzman Construction Group",
+            "classification": "do_not_enrich",
+            "aliases": [
+                "guzman construction group"
+            ],
+            "licenses": [
+                "1010621"
+            ],
+            "reason": "Do not enrich for the Cahill/Guzman JV: not the bidding contact. Cahill Contractors manages subcontractor bidding.",
+            "evidence": [
+                "Owner decision 2026-10-23",
+                "Its own SF permit 202604169603 (860 McAllister St, demolish 12-unit building) is a separate project: owner to decide whether it qualifies on its own"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Esquivel Grading & Paving",
+            "classification": "competitor",
+            "aliases": [
+                "esquivel grading"
+            ],
+            "licenses": [
+                "463185"
+            ],
+            "reason": "Self-performs paving, concrete flatwork (sidewalks, curbs, ADA ramps) and light underground (storm drains, water lines): direct competitor for paving/hardscape/drainage.",
+            "evidence": [
+                "Blue Book self-description: paving roadways/parking lots/parks, concrete flatwork, light underground; claims ~90% of SF public roadway paving projects in 2018 https://www.thebluebook.com/iProView/361296"
+            ],
+            "decidedBy": "research",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Build Group",
+            "classification": "uncertain",
+            "aliases": [
+                "build group inc"
+            ],
+            "licenses": [
+                "894951"
+            ],
+            "website": "https://www.buildgc.com",
+            "reason": "Large SF GC (contracts approaching $1B/yr) that uses subcontractors, but self-performs structural concrete, shoring and formwork, and no public evidence that it bids out demolition/excavation/grading/site utilities: manual review.",
+            "scope": "Possible: demolition, excavation/grading, hauling, site utilities, hardscape on ground-up projects. Not concrete (self-performed). Current SF permit is a $150K batting cage with a concrete slab: not a fit.",
+            "evidence": [
+                "Own site: 'expertise to self-perform structural concrete, glazing, metal framing, drywall, insulation, plaster, millwork and flooring' https://www.buildgc.com/company/why-build-group/",
+                "Business Wire 2025-12-16: self-perform structural concrete, shoring and formwork https://www.businesswire.com/news/home/20251216417668/en/",
+                "Levelset: subcontractors file preliminary notices on its jobs; reported to pay in >60 days https://levelset.com/contractors/build-group-inc",
+                "Blue Book lists General Building, Concrete and General Engineering classifications (verify on CSLB) https://www.thebluebook.com/iProView/899425/build-group-inc/general-contractors/license-insurance-bonding/",
+                "BXSCCO 2021 bid results: bid as prime on a UCSF demolition package ($704K) https://www.bxscco.com/wp-content/uploads/2021/02/COPS_BidResultsbyEntryDate3-1.pdf",
+                "No public invitation to bid for sitework found (web search 2026-10-23)"
+            ],
+            "decidedBy": "research",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Source Planning and Construction",
+            "classification": "uncertain",
+            "aliases": [
+                "source planning"
+            ],
+            "licenses": [
+                "950183"
+            ],
+            "reason": "Busy SF interiors/TI GC (116 SF permits in 3 years, $43M, no new buildings): uses subcontractors, but no sitework and no public bid solicitations found. Fit only for interior demolition.",
+            "evidence": [
+                "Levelset: GC, 909 Montgomery St; 72-121 jobs in last 12 months https://www.levelset.com/contractors/source-planning-and-construction",
+                "DataSF permit history: TI only"
+            ],
+            "decidedBy": "research",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Richlen Construction",
+            "classification": "uncertain",
+            "aliases": [
+                "richlen"
+            ],
+            "licenses": [
+                "570031"
+            ],
+            "reason": "SF Financial District TI/interiors contractor that itself bids as a subcontractor (partitions/general construction on UCSF jobs). No sitework; fit only for interior demolition.",
+            "evidence": [
+                "UCSF bid summary: Richlen listed as a subcontractor https://realestate.ucsf.edu/document/bid-summary-c2932102-pdf",
+                "BuildZoom: tenant improvement and interior projects https://www.buildzoom.com/contractor/richlen-partition-company"
+            ],
+            "decidedBy": "research",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Marchetti Group",
+            "classification": "uncertain",
+            "aliases": [
+                "marchetti group"
+            ],
+            "licenses": [
+                "992330"
+            ],
+            "reason": "Family GC (40+ years, Bay Area): ground-up, seismic retrofit and commercial interiors. No public bid solicitations found; current SF permit is a $569K office TI.",
+            "evidence": [
+                "Blue Book profile https://www.thebluebook.com/iProView/253773/marchetti-group/general-contractors/",
+                "DataSF: 45 permits in 3 years, $12.6M, no new buildings"
+            ],
+            "decidedBy": "research",
+            "decided": "2026-10-23"
+        },
+        {
             "name": "Power Engineering Construction Co.",
             "classification": "competitor",
-            "aliases": ["power engineering construction", "power engineering contraction"],
-            "licenses": ["488215"],
+            "aliases": [
+                "power engineering construction",
+                "power engineering contraction"
+            ],
+            "licenses": [
+                "488215"
+            ],
             "reason": "Heavy marine/civil contractor that self-performs demolition (holds the demolition permit at 1 Clipper Cove; bid Port of SF marine demolition 2025).",
-            "evidence": ["https://sfport.com/media/10428/download", "https://www.baycrossings.com/?p=11673"],
+            "evidence": [
+                "https://sfport.com/media/10428/download",
+                "https://www.baycrossings.com/?p=11673"
+            ],
             "decidedBy": "owner",
             "decided": "2026-10-23"
         },
         {
             "name": "Formline Construction Corp",
             "classification": "competitor",
-            "aliases": ["formline construction"],
-            "licenses": ["1162926"],
+            "aliases": [
+                "formline construction"
+            ],
+            "licenses": [
+                "1162926"
+            ],
             "reason": "Not a qualified buyer: no evidence of a large GC that subcontracts sitework; small residential remodel/excavation work.",
-            "evidence": ["Owner decision 2026-10-23 after public-source check (no public profile found)"],
+            "evidence": [
+                "Owner decision 2026-10-23 after public-source check (no public profile found)"
+            ],
             "decidedBy": "owner",
             "decided": "2026-10-23"
         },
         {
             "name": "Shorecal Engineering Inc.",
             "classification": "competitor",
-            "aliases": ["shorecal engineering"],
-            "licenses": ["1146593"],
+            "aliases": [
+                "shorecal engineering"
+            ],
+            "licenses": [
+                "1146593"
+            ],
             "reason": "Not a qualified buyer: engineering-type contractor with no public evidence of size or subcontracting; possible competitor.",
-            "evidence": ["Owner decision 2026-10-23 after public-source check (no public profile found)"],
+            "evidence": [
+                "Owner decision 2026-10-23 after public-source check (no public profile found)"
+            ],
             "decidedBy": "owner",
             "decided": "2026-10-23"
         },
         {
             "name": "Novo Construction",
             "classification": "competitor",
-            "aliases": ["novo construction"],
-            "licenses": ["791022"],
+            "aliases": [
+                "novo construction"
+            ],
+            "licenses": [
+                "791022"
+            ],
             "reason": "Not a qualified buyer: tenant-improvement-focused commercial GC with no evidence of subcontracting demolition or sitework.",
-            "evidence": ["https://novoconstruction.com/", "Owner decision 2026-10-23"],
+            "evidence": [
+                "https://novoconstruction.com/",
+                "Owner decision 2026-10-23"
+            ],
             "decidedBy": "owner",
             "decided": "2026-10-23"
         },
-        { "name": "Deacon Construction", "classification": "competitor", "aliases": ["deacon construction", "deacon corp"], "reason": "Owner's previous research: competitor (self-performs scopes Best Construction sells).", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "BCCI Construction", "classification": "competitor", "aliases": ["bcci construction", "bcci"], "licenses": ["492944"], "reason": "Owner's previous research: competitor / not a buyer.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "Swinerton", "classification": "competitor", "aliases": ["swinerton"], "reason": "Owner's previous research: self-performing GC.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "DPR Construction", "classification": "competitor", "aliases": ["dpr construction", "dpr"], "reason": "Owner's previous research: self-performing GC.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "Hensel Phelps", "classification": "competitor", "aliases": ["hensel phelps"], "reason": "Owner's previous research: self-performing GC.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "Rudolph and Sletten", "classification": "competitor", "aliases": ["rudolph and sletten"], "reason": "Owner's previous research: self-performing GC.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "XL Construction", "classification": "competitor", "aliases": ["xl construction"], "reason": "Owner's previous research: self-performing GC.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "Clark Construction", "classification": "competitor", "aliases": ["clark construction", "clark pacific"], "reason": "Owner's previous research: self-performing GC.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "Skanska", "classification": "competitor", "aliases": ["skanska"], "reason": "Owner's previous research: self-performing GC / heavy civil.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "W.E. O'Neil Construction", "classification": "competitor", "aliases": ["w e oneil", "we oneil"], "reason": "Owner's previous research: self-performing GC.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "Level 10 Construction", "classification": "competitor", "aliases": ["level 10 construction"], "reason": "Owner's previous research: self-performing GC.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "Granite Construction", "classification": "competitor", "aliases": ["granite construction"], "reason": "Heavy civil / paving / sitework: direct competitor.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "Ghilotti", "classification": "competitor", "aliases": ["ghilotti"], "reason": "Ghilotti Bros / Ghilotti Construction: heavy civil, paving, sitework: direct competitor.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "DeSilva Gates Construction", "classification": "competitor", "aliases": ["desilva gates"], "reason": "Heavy civil / paving / earthwork: direct competitor.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "McGuire and Hester", "classification": "competitor", "aliases": ["mcguire and hester"], "reason": "Heavy civil / underground / sitework: direct competitor.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "Teichert", "classification": "competitor", "aliases": ["teichert"], "reason": "Heavy civil / paving / aggregates: direct competitor.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" },
-        { "name": "Bay Cities Paving & Grading", "classification": "competitor", "aliases": ["bay cities paving"], "reason": "Paving / grading: direct competitor.", "evidence": ["Owner-provided deny list 2026-10-23"], "decidedBy": "owner", "decided": "2026-10-23" }
+        {
+            "name": "Deacon Construction",
+            "classification": "competitor",
+            "aliases": [
+                "deacon construction",
+                "deacon corp"
+            ],
+            "reason": "Owner's previous research: competitor (self-performs scopes Best Construction sells).",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "BCCI Construction",
+            "classification": "competitor",
+            "aliases": [
+                "bcci construction",
+                "bcci"
+            ],
+            "licenses": [
+                "492944"
+            ],
+            "reason": "Owner's previous research: competitor / not a buyer.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Swinerton",
+            "classification": "competitor",
+            "aliases": [
+                "swinerton"
+            ],
+            "reason": "Owner's previous research: self-performing GC.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "DPR Construction",
+            "classification": "competitor",
+            "aliases": [
+                "dpr construction",
+                "dpr"
+            ],
+            "reason": "Owner's previous research: self-performing GC.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Hensel Phelps",
+            "classification": "competitor",
+            "aliases": [
+                "hensel phelps"
+            ],
+            "reason": "Owner's previous research: self-performing GC.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Rudolph and Sletten",
+            "classification": "competitor",
+            "aliases": [
+                "rudolph and sletten"
+            ],
+            "reason": "Owner's previous research: self-performing GC.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "XL Construction",
+            "classification": "competitor",
+            "aliases": [
+                "xl construction"
+            ],
+            "reason": "Owner's previous research: self-performing GC.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Clark Construction",
+            "classification": "competitor",
+            "aliases": [
+                "clark construction",
+                "clark pacific"
+            ],
+            "reason": "Owner's previous research: self-performing GC.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Skanska",
+            "classification": "competitor",
+            "aliases": [
+                "skanska"
+            ],
+            "reason": "Owner's previous research: self-performing GC / heavy civil.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "W.E. O'Neil Construction",
+            "classification": "competitor",
+            "aliases": [
+                "w e oneil",
+                "we oneil"
+            ],
+            "reason": "Owner's previous research: self-performing GC.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Level 10 Construction",
+            "classification": "competitor",
+            "aliases": [
+                "level 10 construction"
+            ],
+            "reason": "Owner's previous research: self-performing GC.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Granite Construction",
+            "classification": "competitor",
+            "aliases": [
+                "granite construction"
+            ],
+            "reason": "Heavy civil / paving / sitework: direct competitor.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Ghilotti",
+            "classification": "competitor",
+            "aliases": [
+                "ghilotti"
+            ],
+            "reason": "Ghilotti Bros / Ghilotti Construction: heavy civil, paving, sitework: direct competitor.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "DeSilva Gates Construction",
+            "classification": "competitor",
+            "aliases": [
+                "desilva gates"
+            ],
+            "reason": "Heavy civil / paving / earthwork: direct competitor.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "McGuire and Hester",
+            "classification": "competitor",
+            "aliases": [
+                "mcguire and hester"
+            ],
+            "reason": "Heavy civil / underground / sitework: direct competitor.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Teichert",
+            "classification": "competitor",
+            "aliases": [
+                "teichert"
+            ],
+            "reason": "Heavy civil / paving / aggregates: direct competitor.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Bay Cities Paving & Grading",
+            "classification": "competitor",
+            "aliases": [
+                "bay cities paving"
+            ],
+            "reason": "Paving / grading: direct competitor.",
+            "evidence": [
+                "Owner-provided deny list 2026-10-23"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        }
     ],
     "jointVentures": [
         {
             "name": "Cahill Guzman Construction Group JV",
-            "aliases": ["cahill guzman construction group jv", "cahill guzman"],
-            "licenses": ["1016831"],
+            "aliases": [
+                "cahill guzman construction group jv",
+                "cahill guzman"
+            ],
+            "licenses": [
+                "1016831"
+            ],
             "managingGc": "Cahill Contractors",
-            "evidence": ["https://trade.cahill-sf.com/?p=5280 (JV project listed on Cahill's trade bidding portal)"],
+            "evidence": [
+                "https://trade.cahill-sf.com/?p=5280 (JV project listed on Cahill's trade bidding portal)"
+            ],
             "decidedBy": "owner",
             "decided": "2026-10-22"
         }
     ],
-    "competitorNamePatterns": [
-        "paving", "asphalt", "excavat", "grading", "demolition", "wrecking", "concrete", "sitework", "site work", "earthwork",
-        "underground", "trucking", "hauling", "pipeline", "general engineering", "engineering contractors", "heavy civil",
-        "landscap", "hardscape", "pavers", "masonry", "electric", "plumbing", "mechanical", "roofing", "glazing", "drywall",
-        "painting", "fire protection", "solar", "hvac", "steel", "framing", "insulation", "waterproofing", "elevator", "sheet metal"
+    "competitorRiskPatterns": [
+        "paving",
+        "asphalt",
+        "excavat",
+        "grading",
+        "demolition",
+        "wrecking",
+        "concrete",
+        "sitework",
+        "site work",
+        "earthwork",
+        "underground",
+        "trucking",
+        "hauling",
+        "pipeline",
+        "general engineering",
+        "engineering contractors",
+        "heavy civil",
+        "landscap",
+        "hardscape",
+        "pavers",
+        "masonry",
+        "electric",
+        "plumbing",
+        "mechanical",
+        "roofing",
+        "glazing",
+        "drywall",
+        "painting",
+        "fire protection",
+        "solar",
+        "hvac",
+        "steel",
+        "framing",
+        "insulation",
+        "waterproofing",
+        "elevator",
+        "sheet metal"
     ]
 }

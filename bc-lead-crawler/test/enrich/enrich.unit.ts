@@ -220,13 +220,20 @@ describe('CLI', () => {
         const registry = join(dir, 'registry.json');
         await writeFile(
             registry,
-            JSON.stringify({ version: 1, companies: [{ name: 'Nolan Construction', classification: 'buyer', reason: 'Large GC that bids sitework out', evidence: ['bid portal'] }], competitorNamePatterns: ['paving'] }),
+            JSON.stringify({
+                version: 1,
+                companies: [
+                    { name: 'Nolan Construction', classification: 'buyer', reason: 'Large GC that bids sitework out', evidence: ['bid portal'] },
+                    { name: 'Bay Cities Paving', classification: 'competitor', reason: 'Self-performs paving', evidence: ['own site'] },
+                ],
+                competitorRiskPatterns: ['paving'],
+            }),
         );
         const common = ['--input', input, '--out', dir, '--config', join(dir, 'none.json'), '--cache', join(dir, 'cache.json'), '--ledger', join(dir, 'ledger.json')];
         common.push('--registry', registry, '--research-cache', join(dir, 'research.json'));
         const { stdout } = await cli(['--dry-run', ...common]);
         expect(stdout).toMatch(/DRY RUN — no Apollo calls were made, no credits were used/);
-        expect(stdout).toMatch(/Buyer gate \(3 companies\): 1 buyer, 1 blocked, 1 manual review/);
+        expect(stdout).toMatch(/Buyer gate \(3 companies\): 1 buyer, 1 blocked, 0 do-not-enrich, 1 manual review/);
         expect(stdout).toMatch(/why: Large GC that bids sitework out/);
         expect(stdout).toMatch(/BLOCKED[^]*Bay Cities Paving/);
         expect(stdout).toMatch(/MANUAL REVIEW[^]*Unknown Builders/);

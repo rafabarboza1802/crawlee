@@ -1,13 +1,15 @@
 import type { Account } from './accounts.js';
 import { accountIdFor, searchNameFor } from './accounts.js';
 import type { BuyerDecision, BuyerRegistry } from './buyers.js';
-import { classifyFromHistory, classifyFromRegistry } from './buyers.js';
+import { classifyFromHistory, classifyFromRegistry, competitorRiskSignal } from './buyers.js';
 import type { PermitHistory } from './research.js';
 import type { FileCache } from './store.js';
 
 export interface GateResult {
     buyers: Account[];
     blocked: Account[];
+    /** Owner decided not to enrich (e.g. a JV partner that is not the bidding contact). */
+    excluded: Account[];
     review: Account[];
 }
 
@@ -26,13 +28,21 @@ export async function applyBuyerGate(
 ): Promise<GateResult> {
     const buyers = new Map<string, Account>();
     const blocked: Account[] = [];
+    const excluded: Account[] = [];
     const review: Account[] = [];
 
     for (const account of accounts) {
         let decision: BuyerDecision | undefined = classifyFromRegistry(registry, account.displayName, account.license);
         if (!decision) {
+            const riskSignal = competitorRiskSignal(registry, account.displayName);
             if (!account.license) {
-                decision = { classification: 'uncertain', reason: 'Unknown company with no licence number to research: manual review.', evidence: [], source: 'permit_research' };
+                decision = {
+                    classification: 'uncertain',
+                    reason: `Unknown company with no licence number to research: manual review.${riskSignal ? ` Competitor-risk word in name ("${riskSignal}").` : ''}`,
+                    evidence: [],
+                    source: 'permit_research',
+                    ...(riskSignal ? { riskSignal } : {}),
+                };
             } else {
                 const key = `research:sf-permits:${account.license}`;
                 let history = cache.get<PermitHistory>(key);
@@ -44,12 +54,13 @@ export async function applyBuyerGate(
                         history = undefined;
                     }
                 }
-                decision = classifyFromHistory(account.displayName, history);
+                decision = classifyFromHistory(account.displayName, history, riskSignal);
             }
         }
 
         if (decision.classification !== 'buyer') {
-            (decision.classification === 'competitor' ? blocked : review).push({ ...account, buyer: decision });
+            const bucket = { competitor: blocked, do_not_enrich: excluded, uncertain: review }[decision.classification];
+            bucket.push({ ...account, buyer: decision });
             continue;
         }
 
@@ -72,5 +83,5 @@ export async function applyBuyerGate(
             buyer: decision,
         });
     }
-    return { buyers: [...buyers.values()], blocked, review };
+    return { buyers: [...buyers.values()], blocked, excluded, review };
 }

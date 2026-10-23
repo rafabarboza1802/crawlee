@@ -77,6 +77,7 @@ try {
         ...inRun.flatMap((p) => rowsForAccount(p, 'awaiting_approval')),
         ...deferred.flatMap((p) => rowsForAccount(p, 'deferred_run_cap')),
         ...gate.blocked.flatMap((a) => rowsForAccount(noCredits(a), 'blocked_competitor')),
+        ...gate.excluded.flatMap((a) => rowsForAccount(noCredits(a), 'do_not_enrich')),
         ...gate.review.flatMap((a) => rowsForAccount(noCredits(a), 'manual_review')),
         ...excluded.map(rowForExclusion),
     ].sort((a, b) => b.opportunity_score - a.opportunity_score);
@@ -92,18 +93,20 @@ try {
         await writeFile(jsonlPath, rows.map((r) => JSON.stringify(r)).join('\n') + '\n');
         await writeFile(estimatePath, JSON.stringify({ estimate: est, calls: inRun.flatMap((p) => p.calls) }, null, 2) + '\n');
         const reviewPath = join(values.out, `buyer-review-${stamp}.csv`);
-        await writeFile(reviewPath, contactPlanToCsv(rows.filter((r) => r.status === 'manual_review' || r.status === 'blocked_competitor')));
+        await writeFile(reviewPath, contactPlanToCsv(rows.filter((r) => ['manual_review', 'blocked_competitor', 'do_not_enrich'].includes(r.status))));
 
         const qualified = opportunities.filter((o) => o.score >= config.minOpportunityScore).length;
         console.log(`\nDRY RUN — no Apollo calls were made, no credits were used, nobody was contacted.\n`);
         console.log(`Opportunities scoring ≥ ${config.minOpportunityScore}: ${qualified}`);
         for (const [reason, n] of Object.entries(Object.groupBy(excluded, (e) => e.reason))) console.log(`  excluded before the gate (${n?.length}): ${reason}`);
-        console.log(`\nBuyer gate (${accounts.length} companies): ${gate.buyers.length} buyer, ${gate.blocked.length} blocked, ${gate.review.length} manual review`);
+        console.log(`\nBuyer gate (${accounts.length} companies): ${gate.buyers.length} buyer, ${gate.blocked.length} blocked, ${gate.excluded.length} do-not-enrich, ${gate.review.length} manual review`);
         console.log(`\nACCEPTED — buyers to look up${deferred.length ? ` (+${deferred.length} deferred to later runs)` : ''}:`);
         for (const line of accountsSummary(inRun)) console.log(`  ${line}`);
         for (const p of inRun) console.log(`       why: ${p.account.buyer!.reason}`);
         console.log(`\nBLOCKED — competitors / not buyers (0 credits):`);
         for (const a of gate.blocked) console.log(`  ${String(a.bestScore).padStart(3)}  ${a.displayName.padEnd(42)} ${a.buyer!.source.padEnd(15)} ${a.buyer!.reason}`);
+        console.log(`\nDO NOT ENRICH — owner decision (0 credits):`);
+        for (const a of gate.excluded) console.log(`  ${String(a.bestScore).padStart(3)}  ${a.displayName.padEnd(42)} ${a.buyer!.reason}`);
         console.log(`\nMANUAL REVIEW — uncertain, stopped before Apollo (0 credits):`);
         for (const a of gate.review) console.log(`  ${String(a.bestScore).padStart(3)}  ${a.displayName.padEnd(42)} ${a.buyer!.source.padEnd(15)} ${a.buyer!.reason}`);
         console.log(`\nEstimate ${est.planId}: ${est.calls} planned Apollo requests (${est.cachedCalls} cached)`);

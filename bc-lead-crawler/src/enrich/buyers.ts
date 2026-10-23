@@ -8,13 +8,15 @@ import type { PermitHistory } from './research.js';
  * Buyer gate: every company is classified before it can reach Apollo.
  * - buyer: may proceed to enrichment;
  * - competitor: blocked (self-performs Best Construction's scopes, or is a trade/specialty contractor);
- * - uncertain: stops for manual review, never uses Apollo credits.
+ * - uncertain: stops for manual review, never uses Apollo credits;
+ * - do_not_enrich: owner decision to skip (e.g. a JV partner that is not the bidding contact); never uses credits.
  */
-export type BuyerClass = 'buyer' | 'competitor' | 'uncertain';
+export type BuyerClass = 'buyer' | 'competitor' | 'uncertain' | 'do_not_enrich';
 
 const RegistryCompany = z.object({
     name: z.string(),
-    classification: z.enum(['buyer', 'competitor']),
+    /** "uncertain" records research notes for a company that still needs a decision. */
+    classification: z.enum(['buyer', 'competitor', 'uncertain', 'do_not_enrich']),
     aliases: z.array(z.string()).default([]),
     licenses: z.array(z.string()).default([]),
     website: z.string().optional(),
@@ -41,7 +43,8 @@ export const BuyerRegistrySchema = z.object({
     updated: z.string().optional(),
     companies: z.array(RegistryCompany),
     jointVentures: z.array(RegistryJv).default([]),
-    competitorNamePatterns: z.array(z.string()).default([]),
+    /** Name words that signal a possible competitor. They trigger research and a flag, never a block on their own. */
+    competitorRiskPatterns: z.array(z.string()).default([]),
 });
 export type BuyerRegistry = z.infer<typeof BuyerRegistrySchema>;
 type Company = z.infer<typeof RegistryCompany>;
@@ -58,13 +61,15 @@ export interface BuyerDecision {
     classification: BuyerClass;
     reason: string;
     evidence: string[];
-    source: 'registry' | 'joint_venture' | 'name_rule' | 'permit_research';
+    source: 'registry' | 'joint_venture' | 'permit_research';
     /** Company to enrich instead of the permit name (registry canonical name or a JV's managing GC). */
     resolvedName?: string;
     /** Original JV name when the decision was resolved through a joint venture. */
     jointVenture?: string;
     scope?: string;
     website?: string;
+    /** Competitor-risk word found in the name (research decides; the word alone never blocks). */
+    riskSignal?: string;
 }
 
 /** "W.E. O'Neil Construction Co." → "w e oneil construction co" */
@@ -106,7 +111,13 @@ function fromCompany(company: Company, source: BuyerDecision['source'], extra: P
     };
 }
 
-/** Decision without network research: registry, joint ventures, name rules. Undefined = needs research. */
+/** Competitor-risk word in the company name, if any. */
+export function competitorRiskSignal(registry: BuyerRegistry, name: string): string | undefined {
+    const n = normalizeName(name);
+    return registry.competitorRiskPatterns.find((p) => n.includes(` ${normalizeName(p).trim()}`));
+}
+
+/** Decision without network research: registry and joint ventures. Undefined = needs research. */
 export function classifyFromRegistry(registry: BuyerRegistry, name: string, license?: string): BuyerDecision | undefined {
     if (isJointVenture(name)) {
         const jv =
@@ -130,19 +141,7 @@ export function classifyFromRegistry(registry: BuyerRegistry, name: string, lice
     }
 
     const company = findCompany(registry, name, license);
-    if (company) return fromCompany(company, 'registry');
-
-    const n = normalizeName(name);
-    const pattern = registry.competitorNamePatterns.find((p) => n.includes(` ${normalizeName(p).trim()}`));
-    if (pattern) {
-        return {
-            classification: 'competitor',
-            reason: `Name indicates a specialty/trade or sitework contractor ("${pattern}"): not a buyer.`,
-            evidence: [`Company name: ${name}`],
-            source: 'name_rule',
-        };
-    }
-    return undefined;
+    return company ? fromCompany(company, 'registry') : undefined;
 }
 
 /** Thresholds for permit-history research. */
@@ -162,10 +161,12 @@ const money = (v: number) => (v >= 1e6 ? `$${(v / 1e6).toFixed(1)}M` : `$${Math.
  * that the company subcontracts sitework, so research alone never yields "buyer": large GCs go to manual review with
  * the evidence attached.
  */
-export function classifyFromHistory(name: string, history: PermitHistory | undefined): BuyerDecision {
+export function classifyFromHistory(name: string, history: PermitHistory | undefined, riskSignal?: string): BuyerDecision {
     const r = RESEARCH_RULES;
+    const risk = riskSignal ? { riskSignal } : {};
+    const flag = riskSignal ? ` Competitor-risk word in name ("${riskSignal}"): research its own work before deciding.` : '';
     if (!history) {
-        return { classification: 'uncertain', reason: 'Permit research unavailable (DataSF not reachable): manual review.', evidence: [], source: 'permit_research' };
+        return { classification: 'uncertain', reason: `Permit research unavailable (DataSF not reachable): manual review.${flag}`, evidence: [], source: 'permit_research', ...risk };
     }
     const summary = `${history.permits} SF permits as contractor since ${history.since} (${history.newBuildings} new buildings, total ${money(history.totalValue)}, largest ${money(history.largestValue)})`;
     const evidence = [summary, ...history.examples];
@@ -175,6 +176,7 @@ export function classifyFromHistory(name: string, history: PermitHistory | undef
             reason: `Self-performs demolition/grading/sitework: ${history.specialistPermits} of ${history.permits} of its own permits are stand-alone sitework.`,
             evidence,
             source: 'permit_research',
+            ...risk,
         };
     }
     const large =
@@ -183,10 +185,12 @@ export function classifyFromHistory(name: string, history: PermitHistory | undef
         (history.newBuildings >= r.largeGc.minNewBuildings || history.totalValue >= r.largeGc.minTotalValue);
     return {
         classification: 'uncertain',
-        reason: large
-            ? `Large GC by permit history, but no public evidence yet that ${name} subcontracts sitework and does not self-perform it: confirm, then add to the registry.`
-            : `Not shown to be a large GC (${summary}).`,
+        reason:
+            (large
+                ? `Large GC by permit history, but no public evidence yet that ${name} subcontracts sitework and does not self-perform it: confirm, then add to the registry.`
+                : `Not shown to be a large GC (${summary}).`) + flag,
         evidence: history.permits ? evidence : [],
         source: 'permit_research',
+        ...risk,
     };
 }

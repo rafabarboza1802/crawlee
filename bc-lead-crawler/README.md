@@ -208,7 +208,10 @@ npm run enrich -- --approve <planId> --input output/opportunities-sf-dbi-<date>.
    never uses credits. The executor also refuses any non-buyer. Order of checks:
    - `buyer-registry.json`: permanent allow/deny list (name, aliases, licences, reason, evidence). Joint ventures
      map to the managing GC that runs subcontractor bidding, and are enriched as that GC. An unknown JV is Uncertain.
-   - Name rules (`competitorNamePatterns`): paving, excavation, demolition, concrete, trades … → Competitor.
+   - Owner decisions in the registry: `do_not_enrich` (e.g. a JV partner that is not the bidding contact) is skipped,
+     and `uncertain` entries keep research notes for companies still awaiting a decision.
+   - Competitor-risk words (`competitorRiskPatterns`: paving, excavating, demolition, concrete, trucking …) only
+     flag the company for research. A name alone never blocks; only evidence that it self-performs those scopes does.
    - Free public research for every new company: its own SF permits over 3 years (DataSF, by licence; cached 30 days
      in `output/buyer-research-cache.json`). Mostly stand-alone demolition/grading/sitework permits → Competitor.
      Otherwise Uncertain, with the evidence attached. Research cannot prove that a company subcontracts sitework,

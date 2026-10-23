@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest';
 
 import type { Business, Opportunity } from '../../src/discover/types.js';
 import { type Account, buildAccounts } from '../../src/enrich/accounts.js';
-import { BuyerRegistrySchema, classifyFromHistory, classifyFromRegistry, isJointVenture, loadBuyerRegistry } from '../../src/enrich/buyers.js';
+import { BuyerRegistrySchema, classifyFromHistory, classifyFromRegistry, competitorRiskSignal, isJointVenture, loadBuyerRegistry } from '../../src/enrich/buyers.js';
 import { EnrichConfigSchema } from '../../src/enrich/config.js';
 import { applyBuyerGate } from '../../src/enrich/gate.js';
 import { estimate, planAccount } from '../../src/enrich/plan.js';
@@ -23,9 +23,11 @@ const registry = BuyerRegistrySchema.parse({
         { name: 'Power Engineering Construction Co.', classification: 'competitor', aliases: ['power engineering contraction'], licenses: ['488215'], reason: 'Self-performs heavy civil.' },
         { name: "W.E. O'Neil Construction", classification: 'competitor', aliases: ['we oneil', 'w e oneil'], reason: 'Large GC competitor.' },
         { name: 'BCCI Construction', classification: 'competitor', aliases: ['bcci'], licenses: ['492944'], reason: 'Competitor.' },
+        { name: 'Guzman Construction Group', classification: 'do_not_enrich', licenses: ['1010621'], reason: 'Not the bidding contact for the JV.' },
+        { name: 'Build Group', classification: 'uncertain', reason: 'Large GC; self-performs concrete; no sitework solicitations found.', evidence: ['own site'] },
     ],
     jointVentures: [{ name: 'Cahill Guzman Construction Group JV', aliases: ['cahill guzman'], licenses: ['1016831'], managingGc: 'Cahill Contractors', evidence: ['Cahill runs trade bidding'] }],
-    competitorNamePatterns: ['paving', 'excavat', 'demolition', 'concrete'],
+    competitorRiskPatterns: ['paving', 'excavat', 'demolition', 'concrete'],
 });
 
 const history = (overrides: Partial<PermitHistory> = {}): PermitHistory => ({
@@ -94,10 +96,16 @@ describe('registry classification', () => {
         expect(classifyFromRegistry(registry, 'Acme Webcor JV')).toMatchObject({ classification: 'uncertain', source: 'joint_venture' });
     });
 
-    test('trade and sitework names are blocked by name rules; other new names need research', () => {
-        expect(classifyFromRegistry(registry, 'Bay Area Paving Co')).toMatchObject({ classification: 'competitor', source: 'name_rule' });
-        expect(classifyFromRegistry(registry, 'Golden Gate Excavating Inc')?.classification).toBe('competitor');
-        expect(classifyFromRegistry(registry, 'Mission Builders Inc')).toBeUndefined();
+    test('competitor-risk words never decide on their own: the company still needs research', () => {
+        expect(classifyFromRegistry(registry, 'Bay Area Paving Co')).toBeUndefined();
+        expect(competitorRiskSignal(registry, 'Bay Area Paving Co')).toBe('paving');
+        expect(competitorRiskSignal(registry, 'Golden Gate Excavating Inc')).toBe('excavat');
+        expect(competitorRiskSignal(registry, 'Mission Builders Inc')).toBeUndefined();
+    });
+
+    test('owner decisions and research notes in the registry are kept', () => {
+        expect(classifyFromRegistry(registry, 'Guzman Construction Group Inc.')).toMatchObject({ classification: 'do_not_enrich', source: 'registry' });
+        expect(classifyFromRegistry(registry, 'Build Group Inc.')).toMatchObject({ classification: 'uncertain', evidence: ['own site'] });
     });
 
     test('a JV whose managing GC is not in the registry is rejected when loading', async () => {
@@ -109,6 +117,9 @@ describe('registry classification', () => {
 
     test('the shipped registry loads and covers the researched competitors', async () => {
         const shipped = await loadBuyerRegistry(new URL('../../buyer-registry.json', import.meta.url).pathname);
+        expect(classifyFromRegistry(shipped, 'Guzman Construction Group Inc.')?.classification).toBe('do_not_enrich');
+        expect(classifyFromRegistry(shipped, 'Esquivel Grading & Paving, Inc.')?.classification).toBe('competitor');
+        expect(classifyFromRegistry(shipped, 'Build Group Inc.')?.classification).toBe('uncertain');
         for (const name of ['Novo Construction Inc', 'Formline Construction Corp', 'Shorecal Engineering Inc', 'Swinerton Builders', 'DPR Construction', 'Teichert Construction', 'Ghilotti Bros Inc']) {
             expect(classifyFromRegistry(shipped, name)?.classification, name).toBe('competitor');
         }
@@ -172,6 +183,7 @@ describe('buyer gate', () => {
             opp('Power Engineering Contraction Co.', '488215', 94),
             opp('Mission Builders Inc', '555', 90),
             opp('Nameless Firm Inc', undefined, 85),
+            opp('Guzman Construction Group Inc.', '1010621', 82),
         ]);
         expect(result.buyers).toHaveLength(1);
         expect(result.buyers[0]).toMatchObject({
@@ -183,10 +195,19 @@ describe('buyer gate', () => {
         });
         expect(result.buyers[0]!.opportunities).toHaveLength(2);
         expect(result.blocked.map((a) => a.displayName)).toEqual(['Power Engineering Contraction Co.']);
+        expect(result.excluded.map((a) => a.displayName)).toEqual(['Guzman Construction Group Inc.']);
         expect(result.review.map((a) => [a.displayName, a.buyer!.source])).toEqual([
             ['Mission Builders Inc', 'permit_research'],
             ['Nameless Firm Inc', 'permit_research'],
         ]);
+    });
+
+    test('a risk word in the name is blocked only when research shows the company self-performs those scopes', async () => {
+        const generalist = await gate([opp('Bay Area Paving Co', '41')], async () => history({ permits: 8, specialistPermits: 1 }));
+        expect(generalist.result.blocked).toEqual([]);
+        expect(generalist.result.review[0]!.buyer).toMatchObject({ classification: 'uncertain', riskSignal: 'paving', reason: expect.stringMatching(/Competitor-risk word in name \("paving"\)/) });
+        const selfPerformer = await gate([opp('Bay Area Paving Co', '42')], async () => history({ permits: 8, specialistPermits: 6 }));
+        expect(selfPerformer.result.blocked[0]!.buyer).toMatchObject({ classification: 'competitor', source: 'permit_research', riskSignal: 'paving' });
     });
 
     test('research is cached per licence and a failed lookup means manual review, not a pass', async () => {
