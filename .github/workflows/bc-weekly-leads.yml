@@ -1,0 +1,70 @@
+name: Best Construction weekly leads
+
+# Runs the whole lead pipeline in GitHub's cloud every Monday morning (Pacific Time), independent of any computer.
+# 15:17 UTC = 8:17 AM PDT (summer) / 7:17 AM PST (winter). Manual runs: Actions tab → this workflow → Run workflow.
+on:
+    schedule:
+        - cron: '17 15 * * 1'
+    workflow_dispatch:
+        inputs:
+            outreach_mode:
+                description: 'Email mode for this run (config = use outreach.config.json; off = no emails; test = only to the test address)'
+                type: choice
+                options: [config, 'off', test]
+                default: config
+
+permissions:
+    contents: write
+
+concurrency:
+    group: bc-weekly-leads
+    cancel-in-progress: false
+
+jobs:
+    weekly:
+        runs-on: ubuntu-latest
+        timeout-minutes: 90
+        defaults:
+            run:
+                working-directory: bc-lead-crawler
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+                  cache-dependency-path: bc-lead-crawler/package-lock.json
+
+            - name: Install
+              run: npm ci
+
+            - name: Run weekly pipeline
+              id: weekly
+              run: npm run weekly
+              env:
+                  # Secrets: Settings → Secrets and variables → Actions → Secrets. Never committed.
+                  LEAD_DATA_KEY: ${{ secrets.LEAD_DATA_KEY }}
+                  APOLLO_API_KEY: ${{ secrets.APOLLO_API_KEY }}
+                  GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
+                  GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_CLIENT_SECRET }}
+                  GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
+                  OUTREACH_FROM: ${{ secrets.OUTREACH_FROM }}
+                  OUTREACH_TEST_TO: ${{ secrets.OUTREACH_TEST_TO }}
+                  OWNER_REPORT_TO: ${{ secrets.OWNER_REPORT_TO }}
+                  SOCRATA_APP_TOKEN: ${{ secrets.SOCRATA_APP_TOKEN }}
+                  # Pause switch without editing files: repository variable OUTREACH_MODE = off (or a manual run input).
+                  OUTREACH_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.outreach_mode != 'config' && inputs.outreach_mode || vars.OUTREACH_MODE }}
+
+            - name: Save lead database (encrypted private data only)
+              if: always()
+              run: |
+                  git config user.name "bc-lead-bot"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git add data
+                  # Safety net: private files must never be committed (data/private is git-ignored; this double-checks).
+                  if git diff --cached --name-only | grep -q '^bc-lead-crawler/data/private/'; then echo "Refusing to commit private data"; exit 1; fi
+                  if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+                  git commit -m "chore: weekly lead run $(date -u +%Y-%m-%d) [skip ci]"
+                  for i in 1 2 3; do git pull --rebase && git push && exit 0; sleep $((i * 5)); done
+                  exit 1

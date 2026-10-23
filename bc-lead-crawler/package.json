@@ -1,0 +1,36 @@
+{
+    "name": "bc-lead-crawler",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Best Construction lead-generation system: public permit discovery, buyer gate, budget-capped contact enrichment (built on Crawlee).",
+    "type": "module",
+    "engines": {
+        "node": ">=22"
+    },
+    "scripts": {
+        "weekly": "sh scripts/run.sh src/weekly/main.ts",
+        "outreach-sample": "sh scripts/run.sh src/weekly/main.ts --sample",
+        "crm": "sh scripts/run.sh src/weekly/main.ts --crm",
+        "find-leads": "sh scripts/run.sh src/leads/main.ts find",
+        "prepare-contacts": "sh scripts/run.sh src/leads/main.ts contacts",
+        "lead-status": "sh scripts/run.sh src/leads/main.ts status",
+        "leads": "sh scripts/run.sh src/leads/main.ts show",
+        "crawl": "tsx src/main.ts",
+        "discover": "sh scripts/run.sh src/discover/main.ts",
+        "enrich": "sh scripts/run.sh src/enrich/main.ts",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "cheerio": "1.0.0-rc.12",
+        "crawlee": "3.18.2",
+        "robots-parser": "3.0.1",
+        "zod": "^4.1.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.0.0",
+        "tsx": "^4.20.0",
+        "typescript": "^5.9.0",
+        "vitest": "^3.2.0"
+    }
+}

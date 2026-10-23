@@ -1,0 +1,28 @@
+{
+    "sources": [
+        {
+            "id": "example-city",
+            "name": "Example City Building Permits (open data)",
+            "city": "Example City",
+            "county": "Alameda",
+            "enabled": false,
+            "baseUrl": "https://data.example-city.gov",
+            "permitsDataset": "abcd-1234",
+            "dateColumns": ["filed_date", "issued_date"],
+            "fields": {
+                "permitNumber": "permit_number",
+                "description": "description",
+                "status": "status",
+                "permitType": "permit_type",
+                "filedDate": "filed_date",
+                "issuedDate": "issued_date",
+                "estimatedCost": "valuation",
+                "address": ["street_number", "street_name"],
+                "zip": "zip",
+                "parcel": "apn",
+                "contractorName": "contractor_company",
+                "contractorLicense": "contractor_license"
+            }
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "minOpportunityScore": 70,
+    "monthlyBudgetUsd": 50,
+    "usdPerCredit": null,
+    "monthlyCreditCap": 500,
+    "maxAccountsPerRun": 25,
+    "maxCandidatesPerAccount": 3,
+    "maxEnrichedPerAccount": 1,
+    "cacheTtlDays": 90,
+    "minOrgMatch": 0.85,
+    "apolloCredits": { "organizationSearch": 1, "peopleSearch": 0, "peopleMatch": 1 }
+}
