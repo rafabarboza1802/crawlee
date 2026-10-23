@@ -74,6 +74,10 @@ export async function executePlans(
         return res.json;
     };
 
+    // Defense in depth: nothing but a gate-approved buyer can ever reach Apollo.
+    const notBuyer = plans.find((p) => p.account.buyer?.classification !== 'buyer');
+    if (notBuyer) throw new Error(`Refusing to run: ${notBuyer.account.displayName} is not classified as a buyer.`);
+
     for (const { account } of plans) {
         if (stopped) {
             results.push({

@@ -203,17 +203,29 @@ npm run enrich -- --approve <planId> --input output/opportunities-sf-dbi-<date>.
 
 1. Takes Phase 2 opportunities scoring ≥ 70 (configurable). Homeowner projects, public agencies and permits with no
    contractor or business owner named are listed as excluded and never looked up.
-2. Groups them by company (contractor first, else a business owner), best score first, max 25 companies per run
+2. **Buyer gate** (`src/enrich/gate.ts`): every company is classified Buyer, Competitor or Uncertain before
+   anything can reach Apollo. Only Buyers are planned; Competitors are blocked; Uncertain stops for manual review and
+   never uses credits. The executor also refuses any non-buyer. Order of checks:
+   - `buyer-registry.json`: permanent allow/deny list (name, aliases, licences, reason, evidence). Joint ventures
+     map to the managing GC that runs subcontractor bidding, and are enriched as that GC. An unknown JV is Uncertain.
+   - Name rules (`competitorNamePatterns`): paving, excavation, demolition, concrete, trades … → Competitor.
+   - Free public research for every new company: its own SF permits over 3 years (DataSF, by licence; cached 30 days
+     in `output/buyer-research-cache.json`). Mostly stand-alone demolition/grading/sitework permits → Competitor.
+     Otherwise Uncertain, with the evidence attached. Research cannot prove that a company subcontracts sitework,
+     so a new company never becomes a Buyer automatically: confirm it, then add it to the registry.
+
+   The dry run also writes `output/buyer-review-<date>.csv` (blocked and manual-review companies with reasons).
+3. Groups buyers by company (contractor first, else a business owner), best score first, max 25 companies per run
    (`--limit` for fewer). Names are cleaned for searching (legal suffix, "*See Notes*", DataSF's 40-character cut).
-3. Per company: Apollo organization search (website, company phone, LinkedIn company page; California only, name
+4. Per company: Apollo organization search (website, company phone, LinkedIn company page; California only, name
    similarity ≥ 0.85 or it stops) → people search for the priority titles (estimator/preconstruction, PM,
    construction manager, superintendent, purchasing, owner/president/operations; property-manager and developer
    titles for owner companies) → verified business email for the primary contact only. Personal emails and phone
    reveals are off; consumer-domain or unverified emails are dropped.
-4. The dry run writes `output/contact-plan-<date>.csv|jsonl` (one row per qualified opportunity with address,
+5. The dry run writes `output/contact-plan-<date>.csv|jsonl` (one row per qualified opportunity with address,
    description, value, score, company, licence, reason to contact, recommended pitch, target titles, manual
    LinkedIn search link) and `output/enrich-estimate-<planId>.json` (every request a paid run would send).
-5. `--approve` refuses unless the plan id matches the reviewed dry run exactly, `APOLLO_API_KEY` is set and the
+6. `--approve` refuses unless the plan id matches the reviewed dry run exactly, `APOLLO_API_KEY` is set and the
    monthly cap has room. It never spends beyond the estimate's maximum, records every paid call in
    `output/enrich-ledger.json`, caches results (including "no match") for 90 days so nothing is bought twice, stops
    the run if Apollo rejects the key, and writes `output/contact-plan-<date>-enriched.csv|jsonl`.

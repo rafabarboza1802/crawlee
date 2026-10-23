@@ -1,5 +1,6 @@
 import type { SegmentGroup } from '../schema.js';
 import type { Business, Opportunity } from '../discover/types.js';
+import type { BuyerDecision } from './buyers.js';
 import { type AccountKind, accountKindFor } from './roles.js';
 
 /** A company to research, with every qualified opportunity it is named on. */
@@ -16,6 +17,8 @@ export interface Account {
     segment: SegmentGroup;
     opportunities: Opportunity[];
     bestScore: number;
+    /** Buyer gate decision; only accounts classified "buyer" may reach Apollo. */
+    buyer?: BuyerDecision;
 }
 
 export interface Exclusion {

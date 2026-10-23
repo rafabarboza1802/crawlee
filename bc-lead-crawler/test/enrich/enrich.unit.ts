@@ -211,15 +211,31 @@ describe('CLI', () => {
     test('dry run writes the plan and the estimate; approval of a different plan id is refused before any call', async () => {
         const dir = await mkdtemp(join(tmpdir(), 'enrich-'));
         const input = join(dir, 'opps.jsonl');
-        await writeFile(input, [opp(93, [{ name: 'Nolan Construction Inc' }]), opp(40, [{}])].map((o) => JSON.stringify(o)).join('\n'));
+        await writeFile(
+            input,
+            [opp(93, [{ name: 'Nolan Construction Inc' }]), opp(91, [{ name: 'Bay Cities Paving & Grading Inc' }]), opp(90, [{ name: 'Unknown Builders Inc' }]), opp(40, [{}])]
+                .map((o) => JSON.stringify(o))
+                .join('\n'),
+        );
+        const registry = join(dir, 'registry.json');
+        await writeFile(
+            registry,
+            JSON.stringify({ version: 1, companies: [{ name: 'Nolan Construction', classification: 'buyer', reason: 'Large GC that bids sitework out', evidence: ['bid portal'] }], competitorNamePatterns: ['paving'] }),
+        );
         const common = ['--input', input, '--out', dir, '--config', join(dir, 'none.json'), '--cache', join(dir, 'cache.json'), '--ledger', join(dir, 'ledger.json')];
+        common.push('--registry', registry, '--research-cache', join(dir, 'research.json'));
         const { stdout } = await cli(['--dry-run', ...common]);
         expect(stdout).toMatch(/DRY RUN — no Apollo calls were made, no credits were used/);
+        expect(stdout).toMatch(/Buyer gate \(3 companies\): 1 buyer, 1 blocked, 1 manual review/);
+        expect(stdout).toMatch(/why: Large GC that bids sitework out/);
+        expect(stdout).toMatch(/BLOCKED[^]*Bay Cities Paving/);
+        expect(stdout).toMatch(/MANUAL REVIEW[^]*Unknown Builders/);
         expect(stdout).toMatch(/credits: 2 expected, 2 maximum/);
         expect(stdout).toMatch(/npm run enrich -- --approve [0-9a-f]{12}/);
         const files = await readdir(dir);
         expect(files.some((f) => f.startsWith('contact-plan-') && f.endsWith('.csv'))).toBe(true);
         expect(files.some((f) => f.startsWith('enrich-estimate-'))).toBe(true);
+        expect(files.some((f) => f.startsWith('buyer-review-'))).toBe(true);
         await expect(cli(['--approve', '000000000000', ...common])).rejects.toMatchObject({ stderr: expect.stringMatching(/plan changed/) });
         expect(await readdir(dir)).not.toContain('ledger.json');
     });

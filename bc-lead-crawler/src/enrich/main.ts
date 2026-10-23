@@ -2,8 +2,12 @@ import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 
+import { DEFAULT_SETTINGS } from '../crawl.js';
 import { OpportunitySchema, type Opportunity } from '../discover/types.js';
 import { accountIdFor, buildAccounts } from './accounts.js';
+import { loadBuyerRegistry } from './buyers.js';
+import { applyBuyerGate } from './gate.js';
+import { permitHistory } from './research.js';
 import { ApolloClient } from './apollo.js';
 import { loadEnrichConfig } from './config.js';
 import { executePlans } from './execute.js';
@@ -21,6 +25,8 @@ const { values } = parseArgs({
         cache: { type: 'string', default: 'output/enrich-cache.json' },
         ledger: { type: 'string', default: 'output/enrich-ledger.json' },
         suppression: { type: 'string', default: 'suppression.txt' },
+        registry: { type: 'string', default: 'buyer-registry.json' },
+        'research-cache': { type: 'string', default: 'output/buyer-research-cache.json' },
         out: { type: 'string', default: 'output' },
     },
 });
@@ -47,10 +53,22 @@ try {
     const ledger = await Ledger.load(values.ledger);
 
     const { accounts, excluded } = buildAccounts(opportunities, config.minOpportunityScore, suppressed);
-    accounts.sort((a, b) => b.bestScore - a.bestScore);
+
+    // Buyer gate: classify every company before anything can reach Apollo (free public research only).
+    const registry = await loadBuyerRegistry(values.registry);
+    const researchCache = await loadCache(values['research-cache'], 30, now);
+    const researchCtx = {
+        userAgent: DEFAULT_SETTINGS.userAgent,
+        robotsToken: DEFAULT_SETTINGS.robotsUserAgent,
+        baseUrl: process.env.DISCOVER_BASE_URL || undefined,
+        log: () => {},
+    };
+    const gate = await applyBuyerGate(accounts, registry, (license) => permitHistory(license, researchCtx, now), researchCache, now);
+    gate.buyers.sort((a, b) => b.bestScore - a.bestScore);
     const perRun = Math.min(config.maxAccountsPerRun, values.limit ? Number(values.limit) : Infinity);
-    const inRun = accounts.slice(0, perRun).map((a) => planAccount(a, config, cache));
-    const deferred = accounts.slice(perRun).map((a) => planAccount(a, config, cache));
+    const inRun = gate.buyers.slice(0, perRun).map((a) => planAccount(a, config, cache));
+    const deferred = gate.buyers.slice(perRun).map((a) => planAccount(a, config, cache));
+    const noCredits = (account: (typeof accounts)[number]) => ({ account, creditsExpected: 0 as const, creditsMax: 0 as const });
     const est = estimate(inRun, config, now);
     const spentThisMonth = ledger.creditsThisMonth(now);
     const capLeft = Math.max(0, est.monthlyCreditCap - spentThisMonth);
@@ -58,6 +76,8 @@ try {
     let rows: ContactPlanRow[] = [
         ...inRun.flatMap((p) => rowsForAccount(p, 'awaiting_approval')),
         ...deferred.flatMap((p) => rowsForAccount(p, 'deferred_run_cap')),
+        ...gate.blocked.flatMap((a) => rowsForAccount(noCredits(a), 'blocked_competitor')),
+        ...gate.review.flatMap((a) => rowsForAccount(noCredits(a), 'manual_review')),
         ...excluded.map(rowForExclusion),
     ].sort((a, b) => b.opportunity_score - a.opportunity_score);
 
@@ -71,19 +91,26 @@ try {
         await writeFile(csvPath, contactPlanToCsv(rows));
         await writeFile(jsonlPath, rows.map((r) => JSON.stringify(r)).join('\n') + '\n');
         await writeFile(estimatePath, JSON.stringify({ estimate: est, calls: inRun.flatMap((p) => p.calls) }, null, 2) + '\n');
+        const reviewPath = join(values.out, `buyer-review-${stamp}.csv`);
+        await writeFile(reviewPath, contactPlanToCsv(rows.filter((r) => r.status === 'manual_review' || r.status === 'blocked_competitor')));
 
         const qualified = opportunities.filter((o) => o.score >= config.minOpportunityScore).length;
         console.log(`\nDRY RUN — no Apollo calls were made, no credits were used, nobody was contacted.\n`);
         console.log(`Opportunities scoring ≥ ${config.minOpportunityScore}: ${qualified}`);
-        console.log(`  companies to look up: ${inRun.length}${deferred.length ? ` (+${deferred.length} deferred to later runs)` : ''}`);
-        for (const [reason, n] of Object.entries(Object.groupBy(excluded, (e) => e.reason))) console.log(`  excluded (${n?.length}): ${reason}`);
-        console.log(`\nCompanies (best opportunity score first):`);
+        for (const [reason, n] of Object.entries(Object.groupBy(excluded, (e) => e.reason))) console.log(`  excluded before the gate (${n?.length}): ${reason}`);
+        console.log(`\nBuyer gate (${accounts.length} companies): ${gate.buyers.length} buyer, ${gate.blocked.length} blocked, ${gate.review.length} manual review`);
+        console.log(`\nACCEPTED — buyers to look up${deferred.length ? ` (+${deferred.length} deferred to later runs)` : ''}:`);
         for (const line of accountsSummary(inRun)) console.log(`  ${line}`);
+        for (const p of inRun) console.log(`       why: ${p.account.buyer!.reason}`);
+        console.log(`\nBLOCKED — competitors / not buyers (0 credits):`);
+        for (const a of gate.blocked) console.log(`  ${String(a.bestScore).padStart(3)}  ${a.displayName.padEnd(42)} ${a.buyer!.source.padEnd(15)} ${a.buyer!.reason}`);
+        console.log(`\nMANUAL REVIEW — uncertain, stopped before Apollo (0 credits):`);
+        for (const a of gate.review) console.log(`  ${String(a.bestScore).padStart(3)}  ${a.displayName.padEnd(42)} ${a.buyer!.source.padEnd(15)} ${a.buyer!.reason}`);
         console.log(`\nEstimate ${est.planId}: ${est.calls} planned Apollo requests (${est.cachedCalls} cached)`);
         console.log(`  credits: ${est.creditsExpected} expected, ${est.creditsMax} maximum` + (est.usdExpected === null ? '' : ` ($${est.usdExpected}–$${est.usdMax})`));
         console.log(`  this month: ${spentThisMonth} spent, cap ${est.monthlyCreditCap} credits / $${est.monthlyBudgetUsd} → ${est.creditsMax <= capLeft ? 'within budget' : 'OVER BUDGET: approval would be refused'}`);
         for (const a of est.assumptions) console.log(`  · ${a}`);
-        console.log(`\nWrote ${csvPath}\n      ${jsonlPath}\n      ${estimatePath} (every planned request)`);
+        console.log(`\nWrote ${csvPath}\n      ${jsonlPath}\n      ${reviewPath} (blocked + manual review, with evidence)\n      ${estimatePath} (every planned request)`);
         console.log(`\nTo run exactly this plan (uses up to ${est.creditsMax} credits):\n  npm run enrich -- --approve ${est.planId} --input ${values.input}${values.limit ? ` --limit ${values.limit}` : ''}`);
         process.exit(0);
     }

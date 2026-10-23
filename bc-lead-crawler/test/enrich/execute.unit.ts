@@ -10,6 +10,7 @@ import type { Business, Opportunity } from '../../src/discover/types.js';
 import { buildAccounts } from '../../src/enrich/accounts.js';
 import { ApolloClient, isVerifiedBusinessEmail, nameSimilarity } from '../../src/enrich/apollo.js';
 import { EnrichConfigSchema } from '../../src/enrich/config.js';
+import type { BuyerDecision } from '../../src/enrich/buyers.js';
 import { executePlans } from '../../src/enrich/execute.js';
 import { applyResults, rowsForAccount } from '../../src/enrich/output.js';
 import { estimate, planAccount } from '../../src/enrich/plan.js';
@@ -73,6 +74,8 @@ const PEOPLE = {
 };
 const MATCH = { person: { id: 'p-est', name: 'Sam Estimator', title: 'Senior Estimator', email: 'sam@nolanconstruction.example', email_status: 'verified', linkedin_url: 'http://www.linkedin.com/in/sam' } };
 
+const BUYER: BuyerDecision = { classification: 'buyer', reason: 'test buyer', evidence: [], source: 'registry' };
+
 async function setup(names: string[], handlers: Parameters<typeof fakeApollo>[0], configOverrides = {}) {
     const api = await fakeApollo(handlers);
     const dir = await mkdtemp(join(tmpdir(), 'exec-'));
@@ -80,7 +83,7 @@ async function setup(names: string[], handlers: Parameters<typeof fakeApollo>[0]
     const cache = await loadCache(join(dir, 'cache.json'), 90, NOW);
     const ledger = await Ledger.load(join(dir, 'ledger.json'));
     const { accounts } = buildAccounts(names.map((x) => opp(x)), 70);
-    const plans = accounts.map((a) => planAccount(a, config, cache));
+    const plans = accounts.map((a) => planAccount({ ...a, buyer: BUYER }, config, cache));
     const est = estimate(plans, config, NOW);
     const go = (approvedCredits = est.creditsMax, cap = est.monthlyCreditCap) =>
         executePlans(plans, config, new ApolloClient('test-key', api.url), cache, ledger, { planId: est.planId, approvedCredits, monthlyCreditCap: cap, now: NOW, log: () => {} });
@@ -91,6 +94,18 @@ let cleanup: (() => Promise<void>) | undefined;
 afterEach(async () => cleanup?.());
 
 describe('approved run against a fake Apollo server', () => {
+    test('refuses to run when any company is not a gate-approved buyer, before any call', async () => {
+        const s = await setup(['Nolan Construction Inc'], {});
+        cleanup = s.api.close;
+        for (const buyer of [undefined, { ...BUYER, classification: 'uncertain' as const }, { ...BUYER, classification: 'competitor' as const }]) {
+            const plans = s.plans.map((p) => ({ ...p, account: { ...p.account, buyer } }));
+            await expect(
+                executePlans(plans, s.config, new ApolloClient('test-key', s.api.url), s.cache, s.ledger, { planId: s.est.planId, approvedCredits: 9, monthlyCreditCap: 9, now: NOW, log: () => {} }),
+            ).rejects.toThrow(/not classified as a buyer/);
+        }
+        expect(s.api.calls).toEqual([]);
+    });
+
     test('organization → people → business email for the highest-priority person; key only in x-api-key', async () => {
         const s = await setup(['Nolan Construction Inc'], { 'mixed_companies/search': () => [200, ORG], 'mixed_people/api_search': () => [200, PEOPLE], 'people/match': () => [200, MATCH] });
         cleanup = s.api.close;

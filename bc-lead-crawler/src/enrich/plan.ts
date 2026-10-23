@@ -114,7 +114,14 @@ export function estimate(plans: AccountPlan[], config: EnrichConfig, now: Date):
     const capCredits = config.usdPerCredit === null ? config.monthlyCreditCap : Math.min(config.monthlyCreditCap, Math.floor(config.monthlyBudgetUsd / config.usdPerCredit));
     // The plan id covers exactly what would be sent and what it costs, so an approval cannot be reused for a changed plan.
     const planId = createHash('sha256')
-        .update(JSON.stringify({ calls: calls.map(({ endpoint, body, cached, credits }) => ({ endpoint, body, cached, credits })), costs: config.apolloCredits }))
+        .update(
+            JSON.stringify({
+                calls: calls.map(({ endpoint, body, cached, credits }) => ({ endpoint, body, cached, credits })),
+                costs: config.apolloCredits,
+                // Gate decisions are part of what is approved: a reclassification invalidates the approval.
+                gate: plans.map((p) => [p.account.accountId, p.account.buyer?.classification ?? 'unclassified', p.account.buyer?.source ?? '']),
+            }),
+        )
         .digest('hex')
         .slice(0, 12);
     return {

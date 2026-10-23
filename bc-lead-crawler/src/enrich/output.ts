@@ -11,7 +11,7 @@ import { roleTargets } from './roles.js';
 
 /** One qualified opportunity with its contact plan. Person fields stay null until an approved paid lookup fills them. */
 export const ContactPlanRowSchema = z.object({
-    status: z.enum(['awaiting_approval', 'deferred_run_cap', 'excluded']),
+    status: z.enum(['awaiting_approval', 'deferred_run_cap', 'blocked_competitor', 'manual_review', 'excluded']),
     status_reason: z.string().optional(),
     opportunity_id: z.string(),
     opportunity_score: z.number(),
@@ -38,6 +38,11 @@ export const ContactPlanRowSchema = z.object({
     account_id: z.string().nullable(),
     account_credits_expected: z.number(),
     account_credits_max: z.number(),
+    /** Buyer gate: buyer | competitor | uncertain, why, and the evidence behind it. */
+    buyer_classification: z.string().optional(),
+    buyer_reason: z.string().optional(),
+    buyer_source: z.string().optional(),
+    buyer_evidence: z.array(z.string()).optional(),
     /** Filled in by an approved paid run. */
     enrichment_status: z.string().optional(),
     enrichment_note: z.string().optional(),
@@ -71,13 +76,25 @@ const PENDING = {
     linkedin_profile_url: null,
 };
 
-export function rowsForAccount(plan: AccountPlan, status: 'awaiting_approval' | 'deferred_run_cap'): ContactPlanRow[] {
+type AccountStatus = 'awaiting_approval' | 'deferred_run_cap' | 'blocked_competitor' | 'manual_review';
+
+const STATUS_REASON: Partial<Record<AccountStatus, string>> = {
+    deferred_run_cap: 'Over the per-run company cap; next run',
+    blocked_competitor: 'Blocked by the buyer gate: competitor or not a buyer. No Apollo credits used.',
+    manual_review: 'Stopped for manual review by the buyer gate. No Apollo credits used.',
+};
+
+export function rowsForAccount(plan: AccountPlan | { account: Account; creditsExpected: 0; creditsMax: 0 }, status: AccountStatus): ContactPlanRow[] {
     const { account } = plan;
     const primaryTitle = roleTargets(account.kind)[0]!.titles[0]!;
+    const buyer = account.buyer;
     return account.opportunities.map((o, i) =>
         ContactPlanRowSchema.parse({
             status,
-            ...(status === 'deferred_run_cap' ? { status_reason: 'Over the per-run company cap; next run' } : {}),
+            ...(STATUS_REASON[status] ? { status_reason: STATUS_REASON[status] } : {}),
+            ...(buyer
+                ? { buyer_classification: buyer.classification, buyer_reason: buyer.reason, buyer_source: buyer.source, buyer_evidence: buyer.evidence }
+                : {}),
             ...base(o),
             company_name: account.displayName,
             company_license: account.license ?? null,
@@ -160,6 +177,9 @@ export function contactPlanToCsv(rows: ContactPlanRow[]): string {
         ['business_email', (r) => pending(r.business_email, r)],
         ['linkedin_profile_url', (r) => pending(r.linkedin_profile_url, r)],
         ['linkedin_manual_search_url', (r) => r.linkedin_manual_search_url ?? ''],
+        ['buyer_classification', (r) => r.buyer_classification ?? ''],
+        ['buyer_reason', (r) => r.buyer_reason ?? ''],
+        ['buyer_evidence', (r) => (r.buyer_evidence ?? []).join(' | ')],
         ['enrichment_status', (r) => [r.enrichment_status, r.enrichment_note].filter(Boolean).join(': ')],
         ['backup_contacts', (r) => (r.backup_contacts ?? []).map((b) => [b.name, b.title].filter(Boolean).join(', ')).join('; ')],
         ['target_titles', (r) => r.target_titles.join('; ')],
