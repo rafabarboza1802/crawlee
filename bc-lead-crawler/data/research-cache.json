@@ -1,0 +1,501 @@
+{
+  "version": 1,
+  "entries": {
+    "research:sf-permits:508844": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "508844",
+        "since": "2023-10-24",
+        "permits": 10,
+        "newBuildings": 0,
+        "totalValue": 6758957,
+        "largestValue": 6000000,
+        "specialistPermits": 0,
+        "examples": [
+          "202512151731 additions alterations or repairs $6,000,000: reconfigure interior framing. excavate partial basement for 15\" lowering of flr.add elevat",
+          "202507241544 otc alterations permit $650,000: exterior remodel of residence; replace in-kind; (3) stained glass windows; repair/replace "
+        ]
+      }
+    },
+    "research:sf-permits:910730": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "910730",
+        "since": "2023-10-24",
+        "permits": 44,
+        "newBuildings": 0,
+        "totalValue": 9062958,
+        "largestValue": 4750000,
+        "specialistPermits": 2,
+        "examples": [
+          "202502240915 additions alterations or repairs $4,750,000: alteration/addition of existing 3-story, 2-unit (2-units + 1-unauthorized dwelling unit) r",
+          "202603167645 additions alterations or repairs $1,211,500: excavate & lower ground floor for new habitable space. interior remodel at all floors, new",
+          "202603167645 additions alterations or repairs $1,211,500: excavate & lower ground floor for new habitable space. interior remodel at all floors, new",
+          "202401254594 otc alterations permit $310,000: demo (e) kitchen cabinets, countertops, appliances, drywall and replace in kind. (n) can l"
+        ]
+      }
+    },
+    "research:sf-permits:1122360": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "1122360",
+        "since": "2023-10-24",
+        "permits": 11,
+        "newBuildings": 0,
+        "totalValue": 2053774,
+        "largestValue": 968498,
+        "specialistPermits": 1,
+        "examples": [
+          "202604240109 additions alterations or repairs $968,498: convert part of garage & storage into conditioned space w/ new bedroom/bath/laundry & medi",
+          "202405293189 additions alterations or repairs $503,776: 100% foundation replacement. remodel of (e) lower level and infill under deck to add 24sf ",
+          "202508132971 otc alterations permit $5,000: demolition of interior drywall less then 50%, replace in kind."
+        ]
+      }
+    },
+    "research:sf-permits:1015230": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "1015230",
+        "since": "2023-10-24",
+        "permits": 43,
+        "newBuildings": 2,
+        "totalValue": 4773185,
+        "largestValue": 953505,
+        "specialistPermits": 4,
+        "examples": [
+          "202510207736 new construction wood frame $953,505: erect a (n) type v-b, 3-story building with 2 residential units.",
+          "202610059058 new construction wood frame $780,000: new construction of 1 detached 2-story, type v-b (adus) at western lot. each adu contains ",
+          "202510207731 demolitions $30,000: demolish existing type 5, 2-story 1-bedroom single family home.",
+          "202401184180 otc alterations permit $62,000: demo kitchen cabinets and dividing wall between kitchen and dining room, install new cabin"
+        ]
+      }
+    },
+    "research:sf-permits:758684": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "758684",
+        "since": "2023-10-24",
+        "permits": 29,
+        "newBuildings": 0,
+        "totalValue": 1810652,
+        "largestValue": 260000,
+        "specialistPermits": 1,
+        "examples": [
+          "202604149350 additions alterations or repairs $260,000: convert g/f t o2 new residential units. renovate 2nd flor unit #201.",
+          "202509185630 otc alterations permit $260,000: interior remodel , partial lightwell infill for stairs from 1/f to 2/f.",
+          "202510107194 otc alterations permit $75,000: excavate parking area to reconfigure parking space."
+        ]
+      }
+    },
+    "research:sf-permits:996081": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "996081",
+        "since": "2023-10-24",
+        "permits": 15,
+        "newBuildings": 0,
+        "totalValue": 532514,
+        "largestValue": 92588,
+        "specialistPermits": 0,
+        "examples": [
+          "202411215505 otc alterations permit $92,588: work on common area only. exterior & structural upgrades to rear of (e), 3,unit story cond",
+          "202403278666 otc alterations permit $85,000: g/f: new 302 sq.ft will include a new bedroom and closet with new interior stairs to the 2"
+        ]
+      }
+    },
+    "research:sf-permits:844979": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "844979",
+        "since": "2023-10-24",
+        "permits": 52,
+        "newBuildings": 0,
+        "totalValue": 12019113,
+        "largestValue": 1580037,
+        "specialistPermits": 1,
+        "examples": [
+          "202607074645 otc alterations permit $1,580,037: miscellaneous repairs at exterior cladding, windows. scuppers replacement at elevated walk",
+          "202407106145 otc alterations permit $1,500,000: repair roof, bldg envolope, concrete wall, crack, coating. repair patios, decks & exterior",
+          "202510086952 otc alterations permit $18,990: demo stucco 170 sqft around windows. remove and reinstall 4 existing windows. install new "
+        ]
+      }
+    },
+    "research:sf-permits:973851": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "973851",
+        "since": "2023-10-24",
+        "permits": 50,
+        "newBuildings": 0,
+        "totalValue": 1283776,
+        "largestValue": 401000,
+        "specialistPermits": 0,
+        "examples": [
+          "202512192237 additions alterations or repairs $401,000: construct basement wall and make crawlspace area habitable with new bedroom, bathroom, fam",
+          "202604028751 otc alterations permit $252,000: revision to pa 202601234425, 202602105600, 202602206224, 202603197892 the only changes on "
+        ]
+      }
+    },
+    "research:sf-permits:1009086": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "1009086",
+        "since": "2023-10-24",
+        "permits": 40,
+        "newBuildings": 0,
+        "totalValue": 3043512,
+        "largestValue": 900000,
+        "specialistPermits": 0,
+        "examples": [
+          "202503142296 otc alterations permit $900,000: replacement and repair of weather envelope and windows on selected elevations, replacement",
+          "202310269522 additions alterations or repairs $500,000: voluntary partial structural strengthening - reinforced concrete column jackets/wall overl"
+        ]
+      }
+    },
+    "research:sf-permits:1096092": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "1096092",
+        "since": "2023-10-24",
+        "permits": 4,
+        "newBuildings": 0,
+        "totalValue": 320002,
+        "largestValue": 200000,
+        "specialistPermits": 1,
+        "examples": [
+          "202405081706 otc alterations permit $200,000: to comply with nov202421823: fire damage repair cosmetic. $200,000 replace in kind-repairi",
+          "202607094752 additions alterations or repairs $120,000: demo and remove (e) deck and patio at rear yard. selective demo of (e) house for new addit",
+          "202607094752 additions alterations or repairs $120,000: demo and remove (e) deck and patio at rear yard. selective demo of (e) house for new addit"
+        ]
+      }
+    },
+    "research:sf-permits:922224": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "922224",
+        "since": "2023-10-24",
+        "permits": 51,
+        "newBuildings": 0,
+        "totalValue": 4398553,
+        "largestValue": 850000,
+        "specialistPermits": 0,
+        "examples": [
+          "202511109285 otc alterations permit $850,000: recommencement and completion of work approved under pa#201807305884",
+          "202311060274 otc alterations permit $427,500: lightwell infill. remodel (e) master bed, (e) family room & garage. 1/f: remodel & relocat"
+        ]
+      }
+    },
+    "research:sf-permits:847920": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "847920",
+        "since": "2023-10-24",
+        "permits": 24,
+        "newBuildings": 0,
+        "totalValue": 2922107,
+        "largestValue": 1145622,
+        "specialistPermits": 0,
+        "examples": [
+          "202103297484 additions alterations or repairs $1,145,622: convert b into r-3. replace windows inkind at rear. 3rd floor: add m.bedroom, bath, 1/2 ba",
+          "202310259485 otc alterations permit $1,052,975: 3rd fl: remove exsiting walls, doors, celing, lightings, interior glazing. install new wal"
+        ]
+      }
+    },
+    "research:sf-permits:584024": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "584024",
+        "since": "2023-10-24",
+        "permits": 31,
+        "newBuildings": 0,
+        "totalValue": 4892847,
+        "largestValue": 905000,
+        "specialistPermits": 0,
+        "examples": [
+          "202608196823 otc alterations permit $905,000: revision to 202606042559, int remodel @ all floors. add bathroom @ 2nd fl, remodel primary",
+          "202502130260 otc alterations permit $718,000: gpha: removal of existing ceiling in kitchen and living room. removal of existing kitchen "
+        ]
+      }
+    },
+    "research:sf-permits:983658": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "983658",
+        "since": "2023-10-24",
+        "permits": 136,
+        "newBuildings": 1,
+        "totalValue": 5554702,
+        "largestValue": 366345,
+        "specialistPermits": 2,
+        "examples": [
+          "202311211263 additions alterations or repairs $366,345: proposed remodel with electrical, plumbing, and structural work. new 1st floor living spac",
+          "202406174651 additions alterations or repairs $308,449: remodel (e) kitchen. remove (e) load bearing wall at hallway. add (n) bath to master bedro",
+          "202404159961 otc alterations permit $20,000: demo wall covering, plumbing insulation, etc to prepare, soft demo only (no framing or str",
+          "202507140744 otc alterations permit $15,000: demo and replace deck tile surface at backyard. repair any dryrot damage(if necessary). de"
+        ]
+      }
+    },
+    "research:sf-permits:472950": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "472950",
+        "since": "2023-10-24",
+        "permits": 12,
+        "newBuildings": 0,
+        "totalValue": 372764,
+        "largestValue": 175000,
+        "specialistPermits": 0,
+        "examples": [
+          "202609087767 additions alterations or repairs $175,000: construct (n) adu in (e) conditioned habitable space. provice new entrance at exterior in ",
+          "202412277447 otc alterations permit $43,763: unit 301. remodel of kitchen removal and replacement of all cabinets countertops, applianc"
+        ]
+      }
+    },
+    "research:sf-permits:1092207": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "1092207",
+        "since": "2023-10-24",
+        "permits": 6,
+        "newBuildings": 0,
+        "totalValue": 258587,
+        "largestValue": 111587,
+        "specialistPermits": 0,
+        "examples": [
+          "202508143060 additions alterations or repairs $111,587: detached new construction 252 sqft local adu with 70 sqft attic and 39 s.f. garage storage",
+          "202506037831 otc alterations permit $40,000: complete bathroom renovation. remodel change in layout. remooving (e) non load bearing par"
+        ]
+      }
+    },
+    "research:sf-permits:1070193": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "1070193",
+        "since": "2023-10-24",
+        "permits": 109,
+        "newBuildings": 0,
+        "totalValue": 8743163,
+        "largestValue": 874500,
+        "specialistPermits": 4,
+        "examples": [
+          "202602115741 additions alterations or repairs $874,500: remodel and expand (e) 3-story residence.include vert,int mods to create 4-store bldg w/ p",
+          "202511079163 additions alterations or repairs $793,000: garage/basement lvl: excavate vertical & horizontal (e)garage area to create ceiling heigh",
+          "202311281473 otc alterations permit $22,000: demolish a portion of the wall in the kitchen. add a new wall, beam & footings. new counte",
+          "202501087939 additions alterations or repairs $500,000: demolishing the 2 story rear yard deck, combining the existing 20 santa marina w/ 22 santa"
+        ]
+      }
+    },
+    "research:sf-permits:1053209": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "1053209",
+        "since": "2023-10-24",
+        "permits": 1,
+        "newBuildings": 0,
+        "totalValue": 100000,
+        "largestValue": 100000,
+        "specialistPermits": 0,
+        "examples": [
+          "202608176674 otc alterations permit $100,000: sidewalk to side yard demo old hard scape- replacce w/ new brick steps and concrete work, "
+        ]
+      }
+    },
+    "research:sf-permits:706753": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "706753",
+        "since": "2023-10-24",
+        "permits": 8,
+        "newBuildings": 0,
+        "totalValue": 317500,
+        "largestValue": 102000,
+        "specialistPermits": 0,
+        "examples": [
+          "202610079149 otc alterations permit $102,000: addition of conditioned home office within unconditioned storage space at first floor, inc",
+          "202311020063 otc alterations permit $60,000: replace existing footing with new concrete footings and replace front and rear siding in k"
+        ]
+      }
+    },
+    "research:sf-permits:982974": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "982974",
+        "since": "2023-10-24",
+        "permits": 14,
+        "newBuildings": 0,
+        "totalValue": 2049008,
+        "largestValue": 500000,
+        "specialistPermits": 0,
+        "examples": [
+          "202606263999 otc alterations permit $500,000: floors 3,5,6,7 & 8: m.e.p permit for bpa 202601214251 and 202603026767.",
+          "202603026767 otc alterations permit $357,000: remove non-compliant convenience stair 3 add non-bearing office partition @ floors 3,5,6,7"
+        ]
+      }
+    },
+    "research:sf-permits:689958": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "689958",
+        "since": "2023-10-24",
+        "permits": 31,
+        "newBuildings": 0,
+        "totalValue": 9253648,
+        "largestValue": 1400000,
+        "specialistPermits": 1,
+        "examples": [
+          "202507291857 otc alterations permit $1,400,000: 1st floor: commercial ti, new drywall, partitions, ceilings and finishes, w/ mechanical an",
+          "202510318678 otc alterations permit $1,000,000: 11th floor: interior t.i. ; demolition and construction of non-structural partitions, new ",
+          "202403228416 otc alterations permit $50,000: demo of non structural paritions, doors, millwork and finishes. no ceiling demo"
+        ]
+      }
+    },
+    "research:sf-permits:1013908": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "1013908",
+        "since": "2023-10-24",
+        "permits": 35,
+        "newBuildings": 0,
+        "totalValue": 5399990,
+        "largestValue": 4000000,
+        "specialistPermits": 0,
+        "examples": [
+          "202610199641 otc alterations permit $4,000,000: 28th floor: t.i. : new partitions, ceiling, finishes, furniture upgrades to mep. minor str",
+          "202604219770 otc alterations permit $250,000: kitchen remodel in-kind: cabinets, counter tops, appliances. remodel 3 bathrooms in-kind: "
+        ]
+      }
+    },
+    "research:sf-permits:399163": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "399163",
+        "since": "2023-10-24",
+        "permits": 33,
+        "newBuildings": 1,
+        "totalValue": 39838682,
+        "largestValue": 31100000,
+        "specialistPermits": 1,
+        "examples": [
+          "202509034495 new construction $31,100,000: **premium plan review**new construction of type ii-b (sprinklered), 1-story steel and mass",
+          "202512111594 otc alterations permit $2,000,000: tenant improvement of first floor fitness space at hills plaza. tenant improvement include",
+          "202510066801 grade or quarry or fill or excavate $560,000: treasure island. rough grading to excavate approx 20,000 cubic yard of soil & transport ma"
+        ]
+      }
+    },
+    "research:sf-permits:902820": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "902820",
+        "since": "2023-10-24",
+        "permits": 22,
+        "newBuildings": 0,
+        "totalValue": 3981517,
+        "largestValue": 2335520,
+        "specialistPermits": 1,
+        "examples": [
+          "202506269545 otc alterations permit $2,335,520: 1500 16th st was gym, now change of use as #201/2nd fl to business services. 1st/f #101 to",
+          "202405071594 otc alterations permit $773,360: demolision of non bearing walls, construct new office and conference rooms. install new ca",
+          "202405071594 otc alterations permit $773,360: demolision of non bearing walls, construct new office and conference rooms. install new ca"
+        ]
+      }
+    },
+    "research:sf-permits:727637": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "727637",
+        "since": "2023-10-24",
+        "permits": 32,
+        "newBuildings": 0,
+        "totalValue": 22114714,
+        "largestValue": 4300000,
+        "specialistPermits": 0,
+        "examples": [
+          "202512111537 otc alterations permit $4,300,000: 22nd fl:commercial ti,demolition of non-structural partitions,doors,ceiling &lighting,mill",
+          "202508112754 otc alterations permit $2,200,000: 13th office ti: new partitions, conference rooms and offices. mep deferred"
+        ]
+      }
+    },
+    "research:sf-permits:1107635": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "1107635",
+        "since": "2023-10-24",
+        "permits": 1,
+        "newBuildings": 0,
+        "totalValue": 170000,
+        "largestValue": 170000,
+        "specialistPermits": 0,
+        "examples": [
+          "202609228446 otc alterations permit $170,000: 1/fl- interior soft demo followed by (n) interior partitions, doors, finishes, mep and (n)"
+        ]
+      }
+    },
+    "research:sf-permits:767196": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "767196",
+        "since": "2023-10-24",
+        "permits": 103,
+        "newBuildings": 0,
+        "totalValue": 63567865,
+        "largestValue": 4135200,
+        "specialistPermits": 4,
+        "examples": [
+          "202510036672 otc alterations permit $4,135,200: 28th floor ti: partitions, doors, ceilings, fixtures & finishes, mep.",
+          "202504023527 otc alterations permit $3,300,000: 4th fl t.i.work includes interoir non structural demo of partitons, light fixtures, ceilin",
+          "202605221770 otc alterations permit $1,300,000: demolition of portion of level 29 slab and portion of gaurdrail, demo of existing smoke cu",
+          "202503071767 otc alterations permit $308,566: demolition and construction of non structural partitions, ceilings, lighting and finishes."
+        ]
+      }
+    },
+    "research:sf-permits:703705": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "703705",
+        "since": "2023-10-24",
+        "permits": 29,
+        "newBuildings": 0,
+        "totalValue": 752819,
+        "largestValue": 180000,
+        "specialistPermits": 0,
+        "examples": [
+          "202502271229 otc alterations permit $180,000: remodel/reconfigure and expand (e) kitchen; remodel 2 full baths and 1 powder room; replac",
+          "202512091264 otc alterations permit $83,415: kitchen and 10x10 master bathroom remodel. all in kind like for like. no wall movement."
+        ]
+      }
+    },
+    "research:sf-permits:995123": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "995123",
+        "since": "2023-10-24",
+        "permits": 47,
+        "newBuildings": 0,
+        "totalValue": 4429354,
+        "largestValue": 400000,
+        "specialistPermits": 1,
+        "examples": [
+          "202503253026 additions alterations or repairs $400,000: excavating e) basement to create 9' ceiling & add new bathroom, bedroom, and family room a",
+          "202311291568 otc alterations permit $374,500: construct 2 bedroom, 2 bath, media room, install wet bar at gr fl. remodel kitchen, bath, ",
+          "202503253026 additions alterations or repairs $400,000: excavating e) basement to create 9' ceiling & add new bathroom, bedroom, and family room a"
+        ]
+      }
+    },
+    "research:sf-permits:974976": {
+      "retrieved_at": "2026-10-23T01:45:06.176Z",
+      "value": {
+        "license": "974976",
+        "since": "2023-10-24",
+        "permits": 40,
+        "newBuildings": 0,
+        "totalValue": 17100191,
+        "largestValue": 1800000,
+        "specialistPermits": 0,
+        "examples": [
+          "202512040978 otc alterations permit $1,800,000: 9th/f t.i. new partitions, offices, conference rooms, and 14 new phone booths. mep deferre",
+          "202512192286 otc alterations permit $1,750,000: 8th floor tenant improvement, selective demolition and construction of non structural part"
+        ]
+      }
+    }
+  }
+}
