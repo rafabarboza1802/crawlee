@@ -2,17 +2,21 @@
     "name": "bc-lead-crawler",
     "version": "0.1.0",
     "private": true,
-    "description": "Public business-website crawler for Best Construction's lead-generation pipeline (built on Crawlee).",
+    "description": "Best Construction lead-generation system: public permit discovery, buyer gate, budget-capped contact enrichment (built on Crawlee).",
     "type": "module",
     "engines": {
         "node": ">=22"
     },
     "scripts": {
+        "find-leads": "sh scripts/run.sh src/leads/main.ts find",
+        "prepare-contacts": "sh scripts/run.sh src/leads/main.ts contacts",
+        "lead-status": "sh scripts/run.sh src/leads/main.ts status",
+        "leads": "sh scripts/run.sh src/leads/main.ts show",
         "crawl": "tsx src/main.ts",
-        "discover": "tsx src/discover/main.ts",
+        "discover": "sh scripts/run.sh src/discover/main.ts",
+        "enrich": "sh scripts/run.sh src/enrich/main.ts",
         "typecheck": "tsc --noEmit",
-        "test": "vitest run",
-        "enrich": "tsx src/enrich/main.ts"
+        "test": "vitest run"
     },
     "dependencies": {
         "cheerio": "1.0.0-rc.12",

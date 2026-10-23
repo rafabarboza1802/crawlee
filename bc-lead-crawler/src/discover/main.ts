@@ -5,7 +5,7 @@ import { parseArgs } from 'node:util';
 import { DEFAULT_SETTINGS } from '../crawl.js';
 import { discover } from './discover.js';
 import { opportunitiesToCsv } from './output.js';
-import { getSource, JURISDICTIONS } from './sources/registry.js';
+import { findSource, JURISDICTIONS } from './sources/registry.js';
 import type { SourceContext } from './sources/source.js';
 import { loadState, saveState, updateState } from './state.js';
 import type { NormalizedPermit } from './types.js';
@@ -40,7 +40,7 @@ const ctx: SourceContext = {
 };
 
 try {
-    const source = getSource(values.source);
+    const source = await findSource(values.source, 'sources.config.json', values.probe);
     if (values.probe) {
         if (!source.probe) throw new Error(`Source ${source.id} does not support --probe.`);
         for (const { dataset, columns } of await source.probe(ctx)) console.log(`${dataset}: ${columns.join(', ')}`);

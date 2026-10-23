@@ -76,6 +76,10 @@ export class Ledger {
         return new Ledger(path, await readJson<LedgerEntry[]>(path, []));
     }
 
+    all(): LedgerEntry[] {
+        return [...this.entries];
+    }
+
     creditsThisMonth(now: Date): number {
         const month = now.toISOString().slice(0, 7);
         return this.entries.filter((e) => e.at.startsWith(month)).reduce((s, e) => s + e.credits, 0);

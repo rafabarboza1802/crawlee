@@ -8,7 +8,7 @@ import type { FileCache } from './store.js';
 export interface GateResult {
     buyers: Account[];
     blocked: Account[];
-    /** Owner decided not to enrich (e.g. a JV partner that is not the bidding contact). */
+    /** Not enriched: owner decision (e.g. a JV partner that is not the bidding contact) or a small, non-target contractor. */
     excluded: Account[];
     review: Account[];
 }
@@ -54,12 +54,13 @@ export async function applyBuyerGate(
                         history = undefined;
                     }
                 }
-                decision = classifyFromHistory(account.displayName, history, riskSignal);
+                const projectValue = Math.max(0, ...account.opportunities.map((o) => o.estimated_value ?? 0));
+                decision = classifyFromHistory(account.displayName, history, riskSignal, projectValue);
             }
         }
 
         if (decision.classification !== 'buyer') {
-            const bucket = { competitor: blocked, do_not_enrich: excluded, uncertain: review }[decision.classification];
+            const bucket = { competitor: blocked, do_not_enrich: excluded, not_target: excluded, uncertain: review }[decision.classification];
             bucket.push({ ...account, buyer: decision });
             continue;
         }

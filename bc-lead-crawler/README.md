@@ -1,15 +1,109 @@
-# bc-lead-crawler
+# Best Construction lead-generation system
 
-Phase 1 of Best Construction's lead-generation pipeline: a polite crawler (built on
-[Crawlee](https://crawlee.dev)) that visits a hand-picked list of company websites and turns each one
-into a **prospect record** with public business information and evidence of construction needs.
-The records are the input contract for the `agency-agents` pipeline, which does segment
-classification, scoring, the "why they need us" write-up, and Apollo enrichment.
+Finds real construction projects in public records, works out which company is buying the work, keeps
+competitors out, and — only when you approve the exact cost — finds the right estimator or preconstruction contact.
+It never emails, calls, submits forms or registers anywhere: outreach is always your decision.
+
+## How to use it (no code needed)
+
+Open a Claude Code session on this repository and type one of these:
+
+| Say this | What happens | Cost |
+|---|---|---|
+| **Find new Best Construction leads.** | Downloads recent public building permits, checks each project, researches every new company in free public records, blocks competitors, and lists the best opportunities. Updates the lead database and the reports. | Free |
+| **Prepare contacts for today's qualified leads.** | Works out the exact Apollo credits needed to find decision makers at the approved buyers, asks you **once** for the whole batch, then runs only what you approved. | Apollo credits (only after your yes) |
+| **I called Cahill** / **Mark 321 Florida St as follow-up** / **We're bidding the Clarendon project** / **Show my leads** | Updates the lead's status in the database. | Free |
+
+Prefer the terminal? The same commands (inside `bc-lead-crawler/`): `npm run find-leads`, `npm run prepare-contacts`,
+`npm run lead-status -- "<lead, address or company>" CONTACTED --note "..."`, `npm run leads`.
+
+### What you get
+
+Every "find leads" run writes these files in `bc-lead-crawler/data/reports/`:
+
+| File | What is in it |
+|---|---|
+| `summary.md` | Plain-English summary: counts, best opportunities, credits needed for contacts |
+| `qualified-opportunities.csv` | Every pursuable project: name, address, city, county, type, value, permit status, stage, GC, developer/owner, our scope, score, bid timing, why it qualifies, public source link |
+| `approved-buyers.csv` | Companies approved as buyers, why, best scope for us, evidence, open projects |
+| `contacts-awaiting-enrichment.csv` | Approved buyers that still need a decision maker, with credits per company |
+| `rejected-competitors.csv` | Competitors and companies not pursued, with the reason and evidence |
+| `manual-review.csv` | Companies that genuinely need a decision, with the research done so far |
+| `apollo-ledger.csv` | Every paid Apollo request and the credits used this month |
+
+Purchased contacts (names, titles, business emails) go to `data/private/reports/contacts.csv`. That folder is never
+saved to GitHub, because this repository is public.
+
+### How a lead moves
+
+DISCOVER (public permits) → VERIFY PROJECT (active, has an address, worth ≥ $100K, includes our scopes) → SCORE
+(fit, value, stage, recency; ≥ 70 qualifies) → CLASSIFY COMPANY → BUYER GATE → CONTACT ENRICHMENT (paid, approved) →
+VERIFY CONTACT (verified business email on the company's domain, decision-making title) → OUTPUT LEAD.
+
+| Status | Meaning |
+|---|---|
+| NEW | Just discovered; not evaluated yet |
+| RESEARCHING | Good project, but the company needs a buyer decision (manual review) |
+| QUALIFIED | Good project with no GC named yet (or a public project): watch for the contractor |
+| BUYER VERIFIED | Approved buyer, but the contact lookup found nobody usable: call the company or use the LinkedIn search link |
+| CONTACT NEEDED | Approved buyer; decision-maker lookup not done yet |
+| CONTACT FOUND | Decision maker found, but no verified business email |
+| READY FOR OUTREACH | Decision maker with a verified business email |
+| CONTACTED / FOLLOW-UP / BID OPPORTUNITY | Set by you; the system never overwrites them |
+| REJECTED | Not a fit: too small, inactive, homeowner, small contractor, do-not-enrich, or set by you |
+| COMPETITOR | Self-performs our scopes or a known competitor; never contacted |
+
+### Who counts as a buyer
+
+- **Buyer** (may get contacts): a large GC, builder, developer or prime contractor with public evidence that it invites
+  subcontractor bids for our scopes (demolition, excavation, grading, sitework, land clearing, concrete flatwork and
+  removal, site utilities, hauling, paving, pavers/hardscape) and does not do that work itself. Approved now: **Cahill
+  Contractors** and **Nibbi Brothers**.
+- **Competitor** (blocked): evidence that it does our scopes itself (its own demolition/grading/paving permits, its
+  own description) or a competitor you named. A word like "Paving" or "Demolition" in the name is never enough.
+- **Not pursued**: small contractors (small permit history, small current job) and companies you excluded.
+- **Manual review**: everything else. It never uses credits.
+- **Joint ventures** are matched to the partner that runs subcontractor bidding (e.g. the Cahill/Guzman JV → Cahill).
+
+Decisions live in `buyer-registry.json`, and Claude records research there so you are not asked twice.
+
+### Money safety (Apollo)
+
+Before any paid request the system checks that the company is an approved buyer, the project scores ≥ 70, the company
+was never looked up before, and cached results are reused. It also checks the monthly cap: **500 credits / $50**,
+counted in `data/apollo-ledger.json`. One approval covers one exact batch; if anything changes, it asks again. The
+API key is read from the `APOLLO_API_KEY` environment setting only, and is never written to files or logs. Personal
+emails and phone reveals are off.
+
+### Where it looks
+
+Today: San Francisco building permits (DataSF, refreshed daily). Priority counties for expansion: Contra Costa,
+Alameda, Santa Clara, Sonoma and San Mateo. Each needs its public permit dataset confirmed and its website allowed in
+this environment; it is then added to `sources.config.json` without code (see `sources.config.example.json`).
+Settings such as the look-back window, minimum score and minimum project value are in `leads.config.json` (optional;
+defaults shown in `src/leads/settings.ts`).
+
+---
+
+# Technical reference
+
+The system is built in three layers, plus the lead pipeline that ties them together (`src/leads/`):
+
+1. **Website crawler** (`src/crawl.ts`, `npm run crawl`): a polite crawler (built on [Crawlee](https://crawlee.dev))
+   for a hand-picked list of company websites, producing prospect records.
+2. **Opportunity discovery** (`src/discover/`, `npm run discover`): public permits → scored opportunities.
+3. **Decision-maker enrichment** (`src/enrich/`, `npm run enrich`): buyer gate + budget-capped Apollo lookups.
+
+The lead pipeline (`npm run find-leads` / `prepare-contacts` / `lead-status` / `leads`) runs discovery, the buyer gate
+and enrichment against the master database `data/lead-db.json`. That file and the ledger are committed so they
+survive new sessions. It holds public business information only, never purchased contact details.
 
 > This folder is self-contained (own `package.json`, uses the published `crawlee@3.18.2` from npm) so it can be
 > moved into its own repository with `git subtree split --prefix=bc-lead-crawler`.
 
-## Guardrails (enforced in `src/crawl.ts` and `src/robots.ts`)
+## Website crawler
+
+### Guardrails (enforced in `src/crawl.ts` and `src/robots.ts`)
 
 | Rule | How |
 |---|---|
@@ -23,7 +117,7 @@ classification, scoring, the "why they need us" write-up, and Apollo enrichment.
 | Minimal personal data | Only generic mailboxes (`info@`, `office@`, `bids@`, `purchasing@`, …) are kept; personal emails, fax numbers and people's names are not collected — job titles only |
 | Traceability | Every phone, email, role, portal link and signal carries its `source_url`; signals include a short quote |
 
-## Lead segments
+### Lead segments
 
 Set `segment_hint` per seed; the record also carries the derived `segment_group`.
 
@@ -39,7 +133,7 @@ Set `segment_hint` per seed; the record also carries the derived `segment_group`
 **Residential = organization websites only** (new-home communities, community associations, design studios).
 Do not seed individual homeowners' or personal websites: homeowner leads should come from inbound channels, not crawling.
 
-## Usage
+### Usage
 
 Requires Node.js 22+.
 
@@ -56,7 +150,7 @@ Output (in `output/`):
 
 Seed CSV columns: `website` (required), `company_name`, `segment_hint`, `source`, `notes`. Lines starting with `#` are ignored.
 
-## Prospect record (abridged)
+### Prospect record (abridged)
 
 ```json
 {
@@ -183,9 +277,12 @@ through their licensed contractor when one is published.
 
 ### Adding a jurisdiction
 
-Find the official permit dataset on the city/county open-data portal. For a Socrata portal, copy
-`src/discover/sources/sf.ts`, change the base URL, dataset IDs and field mapping, register it in
-`src/discover/sources/registry.ts`, add a fixture-based test, and run `--probe` first. Permit-search websites
+Find the official permit dataset on the city/county open-data portal. For a Socrata portal no code is needed: add
+an entry to `sources.config.json` (copy `sources.config.example.json`: base URL, dataset id, date columns and the
+column names), run `npm run discover -- --source <id> --probe` to check the columns, then set `"enabled": true` and add
+the id to `sources` in `leads.config.json`. A missing required column stops the run with the real column list. For
+other portal types (ArcGIS Hub, CKAN), write a source like `src/discover/sources/sf.ts` and register it in
+`src/discover/sources/registry.ts`. Permit-search websites
 without an open-data export (Accela/eTRAKiT search forms, logins) are out of scope.
 
 ## Phase 3: decision-maker enrichment
@@ -230,7 +327,7 @@ npm run enrich -- --approve <planId> --input output/opportunities-sf-dbi-<date>.
    LinkedIn search link) and `output/enrich-estimate-<planId>.json` (every request a paid run would send).
 6. `--approve` refuses unless the plan id matches the reviewed dry run exactly, `APOLLO_API_KEY` is set and the
    monthly cap has room. It never spends beyond the estimate's maximum, records every paid call in
-   `output/enrich-ledger.json`, caches results (including "no match") for 90 days so nothing is bought twice, stops
+   `data/apollo-ledger.json`, caches results (in `data/private/apollo-cache.json`) (including "no match") for 90 days so nothing is bought twice, stops
    the run if Apollo rejects the key, and writes `output/contact-plan-<date>-enriched.csv|jsonl`.
 
 The key is read from the `APOLLO_API_KEY` environment variable and sent only in Apollo's `x-api-key` header. LinkedIn
@@ -238,9 +335,8 @@ is never requested by code (enforced by a guard and tests); profile URLs come on
 search link is given. Settings: copy `enrich.config.example.json` to `enrich.config.json` and set `usdPerCredit` to
 see dollars. Credit costs per endpoint are assumptions to verify. Do-not-contact list: `suppression.txt` (git-ignored).
 
-## Next phases
+## Next steps
 
-1. Phase 3 free website team-page provider (public leadership pages), run before Apollo to save credits.
-2. More jurisdictions (verify each county's open-data permit dataset first).
-3. Public bid notices readable without login.
-4. Feed named contractors/developers from opportunities into the Phase 1 website crawler as seeds.
+1. More counties: confirm each county's open-data permit dataset, allow its domain, add it to `sources.config.json`.
+2. Public bid notices readable without login (e.g. agency bid boards) as a second discovery source.
+3. A free website team-page provider (public leadership pages), run before Apollo to save credits.

@@ -22,6 +22,26 @@
             "decided": "2026-10-22"
         },
         {
+            "name": "Nibbi Brothers",
+            "classification": "buyer",
+            "aliases": [
+                "nibbi brothers",
+                "nibbi bros",
+                "nibbi brothers construction",
+                "nibbi brothers general contractors"
+            ],
+            "website": "https://www.nibbi.com",
+            "reason": "Large San Francisco GC that publicly solicits subcontractor bids for demolition, grading, earthwork, site utilities and paving (UCSF and SFO projects).",
+            "scope": "Site demolition, grading/earthwork, site utilities, hauling, asphalt paving and drive aisles, concrete curb/gutter/sidewalk flatwork.",
+            "evidence": [
+                "BXSCCO Weekly Projects Bidding 1/24/2025: Nibbi requesting sub bids for a UCSF Employee Center (abatement, demolition, grading, earthwork, site utilities, paving and drive aisles, concrete foundations) https://bxscco.com/wp-content/uploads/2025/01/WB_012725.pdf",
+                "SFO West Field Utilities and Paving: Nibbi prequalified subcontractors for site demolition, earthwork, asphalt paving and wet/dry utilities https://procurement.opengov.com/portal/sfoconstruction/projects/142830/document?section=all",
+                "2024 UCSF Pritzker Building upgrade: Nibbi sought bids for demolition, concrete curb/gutter/sidewalk, curb ramps and HMA paving (BXSCCO bulletin)"
+            ],
+            "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
             "name": "Guzman Construction Group",
             "classification": "do_not_enrich",
             "aliases": [
@@ -422,6 +442,97 @@
                 "Owner-provided deny list 2026-10-23"
             ],
             "decidedBy": "owner",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Citidev",
+            "classification": "not_target",
+            "aliases": [
+                "citidev"
+            ],
+            "licenses": [
+                "910730"
+            ],
+            "reason": "Small San Francisco residential contractor (1-10 employees): remodels, ADUs, foundation work and seismic retrofits. Not a large GC/developer buyer; self-performs foundation work.",
+            "evidence": [
+                "Houzz profile: remodeling, ADUs, foundation work, earthquake retrofitting https://www.houzz.com/professionals/general-contractors/citidev-inc-pfvwus-pf~1418449949",
+                "ZipRecruiter: residential building construction, 1-10 employees https://www.ziprecruiter.com/co/Citidev"
+            ],
+            "decidedBy": "research",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Edri Construction",
+            "classification": "not_target",
+            "aliases": [
+                "edri construction"
+            ],
+            "licenses": [
+                "1070193"
+            ],
+            "reason": "San Francisco residential remodeling/ADU/kitchen contractor. Not a large GC/developer buyer.",
+            "evidence": [
+                "Directory listings: residential remodeling at 701 Cortland Ave https://serviceagent.ai/directory/california/san-francisco/construction/edri-construction/",
+                "https://business.dptribune.com/dptribune/news/read/42680157/edri_construction_offers_full_spectrum_building"
+            ],
+            "decidedBy": "research",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Cello & Maudru Construction",
+            "classification": "uncertain",
+            "aliases": [
+                "cello and maudru",
+                "cello maudru"
+            ],
+            "licenses": [
+                "508844"
+            ],
+            "reason": "Napa-based luxury GC (custom estates, wineries, resorts; ~$40-65M revenue). Estates and wineries usually need excavation/grading, but no public evidence found that it bids out sitework: manual review.",
+            "scope": "Possible: excavation, grading, site utilities, hardscape on estate/winery projects.",
+            "evidence": [
+                "BuildZoom: ground-up construction, historic restorations, complex remodels https://www.buildzoom.com/contractor/cello-maudru-construction-company-incorporated",
+                "Company profile: custom homes, estates, wineries, resorts since 1987 https://www.bitscale.ai/directory/cello-and-maudru-construction-co-inc",
+                "No public sub-bid solicitation found (web search 2026-10-23)"
+            ],
+            "decidedBy": "research",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Skyline Construction",
+            "classification": "uncertain",
+            "aliases": [
+                "skyline construction"
+            ],
+            "licenses": [
+                "727637"
+            ],
+            "reason": "Employee-owned commercial interiors GC (SF, Oakland, San Jose) that issues subcontracts, but interiors only: fit only for interior demolition. No sitework solicitations found.",
+            "scope": "Interior demolition only.",
+            "evidence": [
+                "Job postings: prepare subcontractor lists, issue and track subcontracts https://www.builtinsf.com/job/project-manager-commercial-interiors/10107586",
+                "Blue Book profile https://thebluebook.com/iProView/961070/skyline-construction/general-contractors"
+            ],
+            "decidedBy": "research",
+            "decided": "2026-10-23"
+        },
+        {
+            "name": "Devcon Construction",
+            "classification": "uncertain",
+            "aliases": [
+                "devcon construction"
+            ],
+            "licenses": [
+                "399163"
+            ],
+            "reason": "Large Silicon Valley design-build GC (Milpitas) working for owners and developers; ground-up projects normally include sitework packages, but no public sub-bid solicitation found: manual review.",
+            "scope": "Possible: demolition, excavation, grading, site utilities, paving on ground-up projects.",
+            "evidence": [
+                "Siteline profile: design-build, general contracting, construction management https://www.siteline.com/general-contractor/contractor/devcon-construction",
+                "DataSF permit history: large GC",
+                "No public sub-bid solicitation found (web search 2026-10-23)"
+            ],
+            "decidedBy": "research",
             "decided": "2026-10-23"
         }
     ],

@@ -9,14 +9,15 @@ import type { PermitHistory } from './research.js';
  * - buyer: may proceed to enrichment;
  * - competitor: blocked (self-performs Best Construction's scopes, or is a trade/specialty contractor);
  * - uncertain: stops for manual review, never uses Apollo credits;
- * - do_not_enrich: owner decision to skip (e.g. a JV partner that is not the bidding contact); never uses credits.
+ * - do_not_enrich: owner decision to skip (e.g. a JV partner that is not the bidding contact); never uses credits;
+ * - not_target: public evidence shows a small contractor, not the large GC/developer Best Construction sells to.
  */
-export type BuyerClass = 'buyer' | 'competitor' | 'uncertain' | 'do_not_enrich';
+export type BuyerClass = 'buyer' | 'competitor' | 'uncertain' | 'do_not_enrich' | 'not_target';
 
 const RegistryCompany = z.object({
     name: z.string(),
     /** "uncertain" records research notes for a company that still needs a decision. */
-    classification: z.enum(['buyer', 'competitor', 'uncertain', 'do_not_enrich']),
+    classification: z.enum(['buyer', 'competitor', 'uncertain', 'do_not_enrich', 'not_target']),
     aliases: z.array(z.string()).default([]),
     licenses: z.array(z.string()).default([]),
     website: z.string().optional(),
@@ -124,9 +125,13 @@ export function classifyFromRegistry(registry: BuyerRegistry, name: string, lice
             (license ? registry.jointVentures.find((j) => j.licenses.includes(license)) : undefined) ??
             registry.jointVentures.find((j) => matchesAlias(name, j.name) || j.aliases.some((a) => matchesAlias(name, a)));
         if (!jv) {
+            // JV names list partners by their first word ("Cahill Guzman ... JV"): a hint only, never a decision.
+            const firstWord = (n: string) => normalizeName(n).trim().split(' ')[0] ?? '';
+            const partners = registry.companies.filter((c) => c.classification === 'buyer' && firstWord(c.name).length >= 4 && matchesAlias(name, firstWord(c.name)));
+            const hint = partners.length ? ` Partner already approved as a buyer: ${partners.map((c) => c.name).join(', ')} (confirm it runs the JV's bidding).` : '';
             return {
                 classification: 'uncertain',
-                reason: 'Joint venture: identify the managing GC that runs subcontractor bidding, then add it to the registry.',
+                reason: `Joint venture: identify the managing GC that runs subcontractor bidding, then add it to the registry.${hint}`,
                 evidence: [],
                 source: 'joint_venture',
                 jointVenture: name,
@@ -151,6 +156,8 @@ export const RESEARCH_RULES = {
     specialistShare: 0.5,
     minPermitsForSpecialist: 3,
     largeGc: { minPermits: 10, minLargestValue: 5_000_000, minNewBuildings: 2, minTotalValue: 20_000_000 },
+    /** Below all of these, and on a small current project, the company is a small contractor: not a target buyer. */
+    small: { maxTotalValue: 5_000_000, maxLargestValue: 2_000_000, maxProjectValue: 5_000_000 },
 } as const;
 
 const money = (v: number) => (v >= 1e6 ? `$${(v / 1e6).toFixed(1)}M` : `$${Math.round(v / 1e3)}K`);
@@ -159,9 +166,10 @@ const money = (v: number) => (v >= 1e6 ? `$${(v / 1e6).toFixed(1)}M` : `$${Math.
  * Classifies a new company from its public San Francisco permit history (DataSF). This can prove that a company
  * self-performs (most of its permits are its own demolition/grading jobs) or that it is a large GC, but it cannot prove
  * that the company subcontracts sitework, so research alone never yields "buyer": large GCs go to manual review with
- * the evidence attached.
+ * the evidence attached. Small contractors (small permit history, no new buildings, small current project) are not
+ * target buyers. `projectValue` is the largest current opportunity, so a big out-of-town GC is never dismissed as small.
  */
-export function classifyFromHistory(name: string, history: PermitHistory | undefined, riskSignal?: string): BuyerDecision {
+export function classifyFromHistory(name: string, history: PermitHistory | undefined, riskSignal?: string, projectValue = 0): BuyerDecision {
     const r = RESEARCH_RULES;
     const risk = riskSignal ? { riskSignal } : {};
     const flag = riskSignal ? ` Competitor-risk word in name ("${riskSignal}"): research its own work before deciding.` : '';
@@ -179,6 +187,20 @@ export function classifyFromHistory(name: string, history: PermitHistory | undef
             ...risk,
         };
     }
+    const small =
+        history.newBuildings === 0 &&
+        history.totalValue < r.small.maxTotalValue &&
+        history.largestValue < r.small.maxLargestValue &&
+        projectValue < r.small.maxProjectValue;
+    if (small) {
+        return {
+            classification: 'not_target',
+            reason: `Small contractor, not a target buyer: ${summary}.${flag}`,
+            evidence: history.permits ? evidence : [],
+            source: 'permit_research',
+            ...risk,
+        };
+    }
     const large =
         history.permits >= r.largeGc.minPermits &&
         history.largestValue >= r.largeGc.minLargestValue &&
@@ -188,7 +210,7 @@ export function classifyFromHistory(name: string, history: PermitHistory | undef
         reason:
             (large
                 ? `Large GC by permit history, but no public evidence yet that ${name} subcontracts sitework and does not self-perform it: confirm, then add to the registry.`
-                : `Not shown to be a large GC (${summary}).`) + flag,
+                : `Mid-size contractor, not shown to be a large GC (${summary}): check whether it bids out sitework.`) + flag,
         evidence: history.permits ? evidence : [],
         source: 'permit_research',
         ...risk,

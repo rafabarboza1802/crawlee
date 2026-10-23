@@ -94,6 +94,7 @@ describe('registry classification', () => {
             evidence: ['Cahill runs trade bidding', 'trade portal'],
         });
         expect(classifyFromRegistry(registry, 'Acme Webcor JV')).toMatchObject({ classification: 'uncertain', source: 'joint_venture' });
+        expect(classifyFromRegistry(registry, 'Cahill Swinerton JV')?.reason).toMatch(/Partner already approved as a buyer: Cahill Contractors/);
     });
 
     test('competitor-risk words never decide on their own: the company still needs research', () => {
@@ -128,13 +129,16 @@ describe('registry classification', () => {
 });
 
 describe('permit-history research', () => {
-    test('never yields buyer: specialists are competitors, large GCs and small firms go to review', () => {
+    test('never yields buyer: specialists are competitors, small firms are not targets, the rest go to review', () => {
         expect(classifyFromHistory('X', undefined)).toMatchObject({ classification: 'uncertain', reason: expect.stringMatching(/unavailable/) });
         expect(classifyFromHistory('X', history({ permits: 6, specialistPermits: 4 })).classification).toBe('competitor');
-        expect(classifyFromHistory('X', history({ permits: 2, specialistPermits: 2 })).classification).toBe('uncertain');
+        expect(classifyFromHistory('X', history({ permits: 2, specialistPermits: 2 })).classification).toBe('not_target');
         const large = classifyFromHistory('X', history({ permits: 30, newBuildings: 4, totalValue: 90e6, largestValue: 40e6, specialistPermits: 2 }));
         expect(large).toMatchObject({ classification: 'uncertain', reason: expect.stringMatching(/^Large GC by permit history/) });
-        expect(classifyFromHistory('X', history({ permits: 3, totalValue: 2e5, largestValue: 1e5 })).reason).toMatch(/^Not shown to be a large GC/);
+        expect(classifyFromHistory('X', history({ permits: 3, totalValue: 2e5, largestValue: 1e5 }))).toMatchObject({ classification: 'not_target', reason: expect.stringMatching(/^Small contractor/) });
+        expect(classifyFromHistory('X', history({ permits: 20, totalValue: 9e6, largestValue: 1.5e6 })).reason).toMatch(/^Mid-size contractor/);
+        // A big current project means a possibly large out-of-town GC: never dismissed as small.
+        expect(classifyFromHistory('X', history({ permits: 1, totalValue: 1e5, largestValue: 1e5 }), undefined, 40e6).classification).toBe('uncertain');
     });
 
     test('summarizes a licence holder’s own recent permits from public data only', async () => {

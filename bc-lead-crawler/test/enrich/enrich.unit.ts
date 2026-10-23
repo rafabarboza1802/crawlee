@@ -100,16 +100,17 @@ describe('account selection', () => {
 });
 
 describe('role targets (owner priority list)', () => {
-    test('construction companies: estimating/precon, PM, CM, superintendent, purchasing, owner/president/operations', () => {
+    test('construction companies: estimating/precon first, then procurement, project leadership, CM/field, leadership last', () => {
         expect(roleTargets('contractor').map((r) => r.category)).toEqual([
             'estimating_preconstruction',
-            'project_management',
+            'procurement',
+            'project_leadership',
             'construction_management',
-            'field',
-            'purchasing',
             'leadership',
         ]);
-        expect(targetTitles('contractor')).toEqual(expect.arrayContaining(['Estimator', 'Project Manager', 'Construction Manager', 'Superintendent', 'Purchasing Manager', 'Owner', 'President', 'Operations Manager']));
+        expect(targetTitles('contractor')).toEqual(
+            expect.arrayContaining(['Chief Estimator', 'Senior Estimator', 'Estimator', 'Director of Preconstruction', 'Preconstruction Manager', 'Project Executive', 'Project Manager', 'Procurement Manager', 'Subcontractor Manager', 'Vendor Manager']),
+        );
     });
 
     test('property owners/managers and developers', () => {

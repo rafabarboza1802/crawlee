@@ -38,8 +38,10 @@ export function rankPeople(people: ApolloPerson[], account: Account, max: number
         const title = (p.title ?? '').toLowerCase();
         const idx = targets.findIndex((t) => t.titles.some((x) => title.includes(x.toLowerCase())));
         if (idx < 0) continue;
+        // Within a role, the more specific title wins (Chief/Senior Estimator before Estimator); California first.
+        const titleIdx = targets[idx]!.titles.findIndex((x) => title.includes(x.toLowerCase()));
         const local = /\b(?:ca|california)\b/i.test(p.state ?? '') ? 0.5 : 0;
-        ranked.push({ ...p, roleCategory: targets[idx]!.category, rank: idx - local });
+        ranked.push({ ...p, roleCategory: targets[idx]!.category, rank: idx + titleIdx / 100 - local });
     }
     return ranked.sort((a, b) => a.rank - b.rank).slice(0, max);
 }

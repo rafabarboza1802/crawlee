@@ -10,13 +10,16 @@ export interface RoleTarget {
 
 /** Owner's priority list (2026-10-20), per kind of company. Order = contact priority. */
 const ROLE_TARGETS: Record<AccountKind, RoleTarget[]> = {
+    // Owner's list (2026-10-23): the people who invite and award subcontractor bids first; leadership only as a fallback.
     contractor: [
-        { category: 'estimating_preconstruction', titles: ['Chief Estimator', 'Estimator', 'Preconstruction Manager', 'Director of Preconstruction'] },
-        { category: 'project_management', titles: ['Project Manager', 'Senior Project Manager'] },
-        { category: 'construction_management', titles: ['Construction Manager'] },
-        { category: 'field', titles: ['Superintendent', 'General Superintendent'] },
-        { category: 'purchasing', titles: ['Purchasing Manager', 'Procurement Manager'] },
-        { category: 'leadership', titles: ['Owner', 'President', 'Operations Manager', 'Director of Operations'] },
+        {
+            category: 'estimating_preconstruction',
+            titles: ['Chief Estimator', 'Senior Estimator', 'Estimator', 'Director of Preconstruction', 'Preconstruction Manager', 'Preconstruction'],
+        },
+        { category: 'procurement', titles: ['Subcontractor Manager', 'Vendor Manager', 'Procurement Manager', 'Purchasing Manager', 'Buyout Manager'] },
+        { category: 'project_leadership', titles: ['Project Executive', 'Senior Project Manager', 'Project Manager'] },
+        { category: 'construction_management', titles: ['Construction Manager', 'General Superintendent', 'Superintendent'] },
+        { category: 'leadership', titles: ['Director of Operations', 'Operations Manager', 'President', 'Owner'] },
     ],
     developer: [
         { category: 'construction_leadership', titles: ['Director of Construction', 'VP of Construction', 'Construction Manager'] },
