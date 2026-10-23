@@ -496,6 +496,23 @@
           "202512192286 otc alterations permit $1,750,000: 8th floor tenant improvement, selective demolition and construction of non structural part"
         ]
       }
+    },
+    "research:sf-permits:1052737": {
+      "retrieved_at": "2026-10-23T02:57:29.976Z",
+      "value": {
+        "license": "1052737",
+        "since": "2023-10-24",
+        "permits": 24,
+        "newBuildings": 0,
+        "totalValue": 856493,
+        "largestValue": 150000,
+        "specialistPermits": 1,
+        "examples": [
+          "202507090468 otc alterations permit $150,000: revision 201803153794, change foundation design. change interior layout of unit to be lega",
+          "202311211249 additions alterations or repairs $125,000: altered site permit. revision to bpa#2022-0805-0034 related to variance case 2022-007994va",
+          "202311070361 otc alterations permit $20,000: demolish and repour new concrete slab in garage. approx 800sf. 6\" thick with 3500 psi conc"
+        ]
+      }
     }
   }
 }

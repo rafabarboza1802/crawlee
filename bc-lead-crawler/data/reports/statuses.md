@@ -3,14 +3,17 @@
 | Status | Meaning |
 |---|---|
 | NEW | Just discovered; not evaluated yet. |
-| RESEARCHING | Good project, but the company needs a buyer decision (manual review). |
-| QUALIFIED | Good project with no GC/buyer named yet (or a public project): watch for the contractor. |
-| BUYER VERIFIED | Approved buyer; contact lookup found nobody usable. Use the company phone or the LinkedIn search link. |
-| CONTACT NEEDED | Approved buyer; decision-maker lookup not done yet (run "prepare contacts"). |
-| CONTACT FOUND | Decision maker found, but no verified business email yet. |
-| READY FOR OUTREACH | Decision maker with a verified business email. Ready for you to reach out. |
-| CONTACTED | You contacted them (set by you). |
-| FOLLOW-UP | Follow-up due (set by you). |
-| BID OPPORTUNITY | Invited to bid / bid in progress (set by you). |
-| REJECTED | Not a fit (too small, inactive, homeowner, do-not-enrich, or set by you). |
-| COMPETITOR | Company self-performs our scopes or is a known competitor. Never contacted. |
+| QUALIFIED | Good project. The buyer still needs a decision maker, or no GC is named yet (watch). |
+| NEEDS_REVIEW | Good project, but the company is not yet proven to be a buyer. Never emailed. |
+| CONTACT_READY | Approved buyer with a verified decision maker; outreach starts on the next run (if sending is on). |
+| CONTACTED | First email sent. |
+| FOLLOW_UP | Follow-up email(s) sent; waiting for a reply. |
+| REPLIED | They replied. Follow-ups stopped; your turn. |
+| ESTIMATING | You are estimating the job (set by you). |
+| BID_INVITED | Invited to bid (set by you). |
+| BID_SUBMITTED | Bid submitted (set by you). |
+| WON | Won (set by you). |
+| LOST | Lost (set by you). |
+| COMPETITOR | Self-performs our scopes or a known competitor. Never contacted. |
+| DO_NOT_CONTACT | Opted out, bounced, blocked or excluded. Never contacted again. |
+| REJECTED | Not a fit: too small, inactive, homeowner, small contractor or unrelated scope. |
