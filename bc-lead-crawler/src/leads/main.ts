@@ -1,26 +1,15 @@
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 
-import { DEFAULT_SETTINGS } from '../crawl.js';
-import { discover } from '../discover/discover.js';
-import { findSource } from '../discover/sources/registry.js';
-import type { SourceContext } from '../discover/sources/source.js';
-import { loadState, saveState, updateState } from '../discover/state.js';
-import { type Opportunity, OpportunitySchema } from '../discover/types.js';
-import { accountIdFor } from '../enrich/accounts.js';
 import { ApolloClient } from '../enrich/apollo.js';
-import { loadBuyerRegistry } from '../enrich/buyers.js';
-import { loadEnrichConfig } from '../enrich/config.js';
 import { executePlans } from '../enrich/execute.js';
 import { permitHistory } from '../enrich/research.js';
-import { Ledger, loadCache, loadSuppression } from '../enrich/store.js';
 import { recordEnrichment } from './contacts.js';
-import { ContactStore, LeadDatabase } from './db.js';
 import { type ContactBatch, type EvaluateResult, evaluateOpportunities, isActive, planContactBatch, rankLeads } from './pipeline.js';
 import { money, writeContactsReport, writeReports } from './report.js';
-import { dataPaths, loadLeadSettings } from './settings.js';
 import { LEAD_STATUSES, type LeadRecord, type LeadStatus, STATUS_MEANING } from './types.js';
+import { discoverAll as discoverWorkspace, exists, loadWorkspace, sourceContext, type Workspace, type WorkspaceOptions } from './workspace.js';
 
 const { values, positionals } = parseArgs({
     allowPositionals: true,
@@ -49,77 +38,24 @@ const USAGE = `Usage:
 
 const command = positionals[0] ?? 'find';
 const now = new Date();
-const paths = dataPaths(values.data);
 
-const ctx: SourceContext = {
-    userAgent: DEFAULT_SETTINGS.userAgent,
-    robotsToken: DEFAULT_SETTINGS.robotsUserAgent,
-    appToken: process.env.SOCRATA_APP_TOKEN || undefined,
-    baseUrl: process.env.DISCOVER_BASE_URL || undefined,
-    log: (m) => console.error(m),
+const ctx = sourceContext();
+const workspaceOptions: WorkspaceOptions = {
+    dataDir: values.data,
+    settingsPath: values.settings,
+    registryPath: values.registry,
+    enrichConfigPath: values.config,
+    sourcesPath: values.sources,
+    suppressionPath: values.suppression,
 };
+const load = () => loadWorkspace(workspaceOptions, now);
+type Loaded = Workspace;
 
-async function exists(path: string) {
-    return access(path).then(
-        () => true,
-        () => false,
-    );
-}
-
-const readJsonl = async (path: string): Promise<Opportunity[]> =>
-    (await readFile(path, 'utf8'))
-        .split('\n')
-        .filter((l) => l.trim())
-        .map((l) => OpportunitySchema.parse(JSON.parse(l)));
-
-async function load() {
-    const settings = await loadLeadSettings(values.settings);
-    const config = await loadEnrichConfig(values.config);
-    return {
-        settings,
-        config,
-        registry: await loadBuyerRegistry(values.registry),
-        db: await LeadDatabase.load(paths.db),
-        contacts: await ContactStore.load(paths.contacts),
-        researchCache: await loadCache(paths.researchCache, 30, now),
-        apolloCache: await loadCache(paths.apolloCache, config.cacheTtlDays, now),
-        ledger: await Ledger.load(paths.ledger),
-        suppressed: await loadSuppression(values.suppression, accountIdFor),
-    };
-}
-type Loaded = Awaited<ReturnType<typeof load>>;
-
-/** DISCOVER: every configured public permit source (free). One failing source never stops the others. */
-async function discoverAll(l: Loaded, warnings: string[]): Promise<Opportunity[]> {
-    if (values.input) return readJsonl(values.input);
-    if (values.reuse && (await exists(paths.lastOpportunities))) return readJsonl(paths.lastOpportunities);
-    const state = await loadState(paths.discoveryState);
-    const all: Opportunity[] = [];
-    for (const id of l.settings.sources) {
-        try {
-            const source = await findSource(id, values.sources);
-            const result = await discover({
-                source,
-                ctx,
-                days: values.days ? Number(values.days) : l.settings.lookbackDays,
-                minScore: l.settings.storeMinScore,
-                maxRows: l.settings.maxRowsPerSource,
-                state,
-                now,
-            });
-            const s = result.stats;
-            console.error(`${source.name}: ${s.fetched} permits, ${s.opportunities} opportunities (${s.newOpportunities} new)`);
-            warnings.push(...result.warnings.map((w) => `${source.name}: ${w}`));
-            Object.assign(state, updateState(state, result.opportunities));
-            all.push(...result.opportunities);
-        } catch (error) {
-            warnings.push(`Source ${id} failed: ${(error as Error).message}`);
-        }
-    }
-    await saveState(paths.discoveryState, state);
-    await mkdir(paths.privateDir, { recursive: true });
-    await writeFile(paths.lastOpportunities, all.map((o) => JSON.stringify(o)).join('\n') + (all.length ? '\n' : ''));
-    return all;
+async function discoverAll(l: Loaded, warnings: string[]) {
+    const run = await discoverWorkspace(l, { sourcesPath: values.sources, days: values.days ? Number(values.days) : undefined, input: values.input, reuse: values.reuse }, ctx, now);
+    for (const s of run.sources) if (s.ok && s.permits) console.error(`${s.name}: ${s.permits} permits, ${s.opportunities} opportunities (${s.newOpportunities} new)`);
+    warnings.push(...run.warnings);
+    return run.opportunities;
 }
 
 function leadLine(l: LeadRecord): string {
@@ -154,7 +90,7 @@ function summaryText(l: Loaded, run: EvaluateResult | undefined, batch: ContactB
         );
     }
     lines.push('## Master database', ...LEAD_STATUSES.map((s) => `- ${s}: ${count(s)}`), '');
-    const pursue = active.filter((x) => ['READY FOR OUTREACH', 'CONTACT FOUND', 'CONTACT NEEDED', 'BUYER VERIFIED', 'BID OPPORTUNITY', 'FOLLOW-UP', 'CONTACTED'].includes(x.status));
+    const pursue = active.filter((x) => x.company_id && db.company(x.company_id)?.classification === 'buyer');
     lines.push('## Best opportunities with an approved buyer', ...(pursue.length ? pursue.slice(0, l.settings.topLeads).map(leadLine) : ['(none yet)']), '');
     const watch = active.filter((x) => !pursue.includes(x));
     lines.push('## Strong projects to watch (GC under review or not named yet)', ...(watch.length ? watch.slice(0, l.settings.topLeads).map(leadLine) : ['(none)']), '');
@@ -189,7 +125,7 @@ async function find() {
     const batch = await planContactBatch(l.db, l.registry, l.settings, l.config, l.apolloCache, l.researchCache, now);
     await l.db.save(now);
     const summary = summaryText(l, run, batch, warnings);
-    const files = await writeReports(paths.reports, { db: l.db, registry: l.registry, batch, ledger: l.ledger.all(), creditsThisMonth: l.ledger.creditsThisMonth(now), now, summary });
+    const files = await writeReports(l.paths.reports, { db: l.db, registry: l.registry, batch, ledger: l.ledger.all(), creditsThisMonth: l.ledger.creditsThisMonth(now), now, summary });
     console.log(summary);
     console.log(`Reports:\n${files.map((f) => `  ${f}`).join('\n')}`);
 }
@@ -200,7 +136,7 @@ async function contacts() {
     const est = batch.estimate;
     const spent = l.ledger.creditsThisMonth(now);
     const capLeft = Math.max(0, est.monthlyCreditCap - spent);
-    const estimatePath = join(paths.estimates, `estimate-${est.planId}.json`);
+    const estimatePath = join(l.paths.estimates, `estimate-${est.planId}.json`);
 
     if (!batch.plans.length) {
         console.log(`No approved buyers are waiting for contacts. Already looked up: ${batch.alreadyEnriched.join(', ') || 'none'}. Nothing to buy.`);
@@ -208,7 +144,7 @@ async function contacts() {
     }
 
     if (!values.approve) {
-        await mkdir(paths.estimates, { recursive: true });
+        await mkdir(l.paths.estimates, { recursive: true });
         await writeFile(estimatePath, JSON.stringify({ estimate: est, calls: batch.plans.flatMap((p) => p.calls) }, null, 2) + '\n');
         console.log(`\nCONTACT PREPARATION — ESTIMATE ONLY. No Apollo calls were made and no credits were used.\n`);
         console.log(`Checks before any paid request:`);
@@ -243,9 +179,9 @@ async function contacts() {
     const found = recordEnrichment(results, batch.plans, l.db, l.contacts, est.planId, now);
     await l.contacts.save();
     await l.db.save(now);
-    const contactsPath = await writeContactsReport(paths.privateReports, l.contacts.all(), l.db);
+    const contactsPath = await writeContactsReport(l.paths.privateReports, l.contacts.all(), l.db);
     const next = await planContactBatch(l.db, l.registry, l.settings, l.config, l.apolloCache, l.researchCache, now);
-    await writeReports(paths.reports, { db: l.db, registry: l.registry, batch: next, ledger: l.ledger.all(), creditsThisMonth: l.ledger.creditsThisMonth(now), now, summary: summaryText(l, undefined, next, []) });
+    await writeReports(l.paths.reports, { db: l.db, registry: l.registry, batch: next, ledger: l.ledger.all(), creditsThisMonth: l.ledger.creditsThisMonth(now), now, summary: summaryText(l, undefined, next, []) });
 
     const used = results.reduce((s, r) => s + r.creditsSpent, 0);
     for (const r of results) {
@@ -262,7 +198,8 @@ async function status() {
     const l = await load();
     const leads = l.db.find(query);
     if (!leads.length) throw new Error(`No lead or company matches "${query}".`);
-    const wanted = statusArg.toUpperCase().replace(/_/g, ' ');
+    // STOP = stop all outreach to this lead/company now.
+    const wanted = statusArg.toUpperCase().replace(/[\s-]+/g, '_').replace(/^STOP$/, 'DO_NOT_CONTACT');
     for (const lead of leads) {
         if (wanted === 'AUTO') l.db.releaseStatus(lead.lead_id, now);
         else if ((LEAD_STATUSES as readonly string[]).includes(wanted)) l.db.setStatus(lead.lead_id, wanted as LeadStatus, values.note ?? `Set by owner`, 'owner', now);

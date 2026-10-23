@@ -23,6 +23,8 @@ export interface EvaluateOptions {
 export interface EvaluateResult {
     discovered: number;
     newLeads: number;
+    /** Opportunities dropped because the same permit was already a lead under another address. */
+    duplicates: number;
     /** Projects that passed verification and the minimum score. */
     qualified: number;
     /** Where the qualified projects ended up, by lead status. */
@@ -38,15 +40,15 @@ export interface EvaluateResult {
 }
 
 const STATUS_RANK: Partial<Record<LeadStatus, number>> = {
-    'BID OPPORTUNITY': 0,
-    'READY FOR OUTREACH': 1,
-    'CONTACT FOUND': 2,
-    'CONTACT NEEDED': 3,
-    'BUYER VERIFIED': 4,
-    'FOLLOW-UP': 5,
+    BID_INVITED: 0,
+    ESTIMATING: 1,
+    BID_SUBMITTED: 2,
+    REPLIED: 3,
+    CONTACT_READY: 4,
+    FOLLOW_UP: 5,
     CONTACTED: 6,
     QUALIFIED: 7,
-    RESEARCHING: 8,
+    NEEDS_REVIEW: 8,
 };
 const WINDOW_RANK = { now: 0, soon: 1, started: 2, watch: 3 } as const;
 
@@ -64,14 +66,18 @@ export function rankLeads(leads: LeadRecord[]): LeadRecord[] {
 /** A pursuable lead: qualified project, not rejected or a competitor. */
 export const isActive = (l: LeadRecord) => STATUS_RANK[l.status] !== undefined;
 
+/** Approved buyer whose decision-maker lookup is still to be done (or must be retried). */
+export const needsContact = (company: CompanyRecord | undefined) => !company?.enrichment || company.enrichment.status.startsWith('stopped') || company.enrichment.status === 'error';
+
 /** Lead status for an approved buyer, from what the (public) database knows about its contact lookup. */
 export function buyerStatus(company: CompanyRecord | undefined): [LeadStatus, string] {
     const e = company?.enrichment;
-    if (!e) return ['CONTACT NEEDED', 'Approved buyer: decision-maker lookup not done yet (prepare contacts).'];
-    if (e.verified_contacts > 0) return ['READY FOR OUTREACH', `Verified decision maker found ${e.at.slice(0, 10)} (see the private contacts report).`];
-    if (e.contact_ids.length > 0) return ['CONTACT FOUND', `Decision maker found ${e.at.slice(0, 10)}, but no verified business email.`];
-    if (e.status.startsWith('stopped')) return ['CONTACT NEEDED', `Previous lookup stopped (${e.status}); will be retried.`];
-    return ['BUYER VERIFIED', `Contact lookup found nobody usable (${e.status}${e.note ? `: ${e.note}` : ''}). Use the company phone or the LinkedIn search link.`];
+    if (!e) return ['QUALIFIED', 'Approved buyer: decision-maker lookup pending.'];
+    if (needsContact(company)) return ['QUALIFIED', `Approved buyer: previous lookup did not finish (${e.status}); will be retried.`];
+    if (e.status === 'bounced') return ['QUALIFIED', 'Approved buyer: the contact email bounced. Call the company or name a new contact.'];
+    if (e.verified_contacts > 0) return ['CONTACT_READY', `Verified decision maker found ${e.at.slice(0, 10)}.`];
+    if (e.contact_ids.length > 0) return ['QUALIFIED', `Decision maker found ${e.at.slice(0, 10)}, but no verified business email: call or use LinkedIn.`];
+    return ['QUALIFIED', `Approved buyer, but the lookup found nobody usable (${e.status}${e.note ? `: ${e.note}` : ''}). Call the company or use the LinkedIn search link.`];
 }
 
 function exclusionStatus(reason: string): [LeadStatus, string] {
@@ -94,6 +100,23 @@ export async function evaluateOpportunities(opportunities: Opportunity[], option
     // Deduplicate: one record per project (the opportunity id is the parcel/address key).
     const unique = new Map<string, Opportunity>();
     for (const o of opportunities) if (!unique.has(o.opportunity_id) || unique.get(o.opportunity_id)!.score < o.score) unique.set(o.opportunity_id, o);
+
+    // The same permit can appear under two addresses (corner lots, multi-frontage parcels): keep one project per
+    // permit — the lead first seen in the database, else the first in this batch.
+    const owner = new Map<string, string>();
+    for (const l of [...db.leads].sort((a, b) => a.first_seen_at.localeCompare(b.first_seen_at))) {
+        if (!owner.has(l.project.permit_number) && l.status !== 'REJECTED') owner.set(l.project.permit_number, l.lead_id);
+    }
+    for (const o of unique.values()) if (!owner.has(o.permit.number)) owner.set(o.permit.number, o.opportunity_id);
+    let duplicates = 0;
+    for (const o of [...unique.values()]) {
+        const canonical = owner.get(o.permit.number)!;
+        if (canonical === o.opportunity_id) continue;
+        unique.delete(o.opportunity_id);
+        duplicates++;
+        // A duplicate already in the database is closed, pointing at the project it duplicates.
+        db.setStatus(o.opportunity_id, 'REJECTED', `Duplicate of ${db.lead(canonical)?.project.name ?? canonical} (same permit ${o.permit.number}).`, 'system', now);
+    }
 
     for (const o of unique.values()) {
         const problems = verifyProject(o, settings, now);
@@ -144,13 +167,25 @@ export async function evaluateOpportunities(opportunities: Opportunity[], option
             db.setStatus(o.opportunity_id, finalStatus, finalReason, 'system', now);
         }
     };
-    for (const a of gate.buyers) record(a, 'CONTACT NEEDED', '');
+    for (const a of gate.buyers) record(a, 'QUALIFIED', '');
     for (const a of gate.blocked) record(a, 'COMPETITOR', `Competitor: ${a.buyer!.reason}`);
     for (const a of gate.excluded) {
         rejected += a.opportunities.length;
-        record(a, 'REJECTED', a.buyer!.classification === 'not_target' ? a.buyer!.reason : `Do not enrich: ${a.buyer!.reason}`);
+        if (a.buyer!.classification === 'not_target') record(a, 'REJECTED', a.buyer!.reason);
+        else record(a, 'DO_NOT_CONTACT', `Do not enrich: ${a.buyer!.reason}`);
     }
-    for (const a of gate.review) record(a, 'RESEARCHING', `Manual review: ${a.buyer!.reason}`);
+    for (const a of gate.review) record(a, 'NEEDS_REVIEW', `Manual review: ${a.buyer!.reason}`);
+
+    // Database-wide: one active lead per permit (an older record of the same permit under another address is closed).
+    const byPermit = new Map<string, LeadRecord[]>();
+    for (const l of db.leads.filter((x) => x.status !== 'REJECTED')) byPermit.set(l.project.permit_number, [...(byPermit.get(l.project.permit_number) ?? []), l]);
+    for (const group of byPermit.values()) {
+        if (group.length < 2) continue;
+        const [keep, ...rest] = group.sort((a, b) => b.last_seen_at.localeCompare(a.last_seen_at) || a.first_seen_at.localeCompare(b.first_seen_at));
+        for (const l of rest) {
+            if (db.setStatus(l.lead_id, 'REJECTED', `Duplicate of ${keep!.project.name} (same permit ${l.project.permit_number}).`, 'system', now)) duplicates++;
+        }
+    }
 
     const qualifiedByStatus: Partial<Record<LeadStatus, number>> = {};
     for (const o of qualified) {
@@ -158,7 +193,8 @@ export async function evaluateOpportunities(opportunities: Opportunity[], option
         qualifiedByStatus[status] = (qualifiedByStatus[status] ?? 0) + 1;
     }
     return {
-        discovered: unique.size,
+        discovered: unique.size + duplicates,
+        duplicates,
         newLeads,
         qualified: qualified.length,
         qualifiedByStatus,
@@ -193,7 +229,9 @@ export async function planContactBatch(
     now: Date,
     limit = Infinity,
 ): Promise<ContactBatch> {
-    const opportunities = db.leads.filter((l) => l.status === 'CONTACT NEEDED' && l.opportunity && l.project.score >= settings.minScore).map((l) => l.opportunity!);
+    const opportunities = db.leads
+        .filter((l) => l.status === 'QUALIFIED' && l.opportunity && l.project.score >= settings.minScore && db.company(l.company_id ?? '')?.classification === 'buyer')
+        .map((l) => l.opportunity!);
     const { accounts } = buildAccounts(opportunities, Math.max(settings.minScore, config.minOpportunityScore));
     // Buyers are decided by the registry; no research (and no network) is needed here.
     const gate = await applyBuyerGate(
@@ -205,7 +243,7 @@ export async function planContactBatch(
         researchCache,
         now,
     );
-    const alreadyEnriched = gate.buyers.filter((a) => db.company(a.accountId)?.enrichment && !db.company(a.accountId)!.enrichment!.status.startsWith('stopped'));
+    const alreadyEnriched = gate.buyers.filter((a) => !needsContact(db.company(a.accountId)));
     const todo = gate.buyers.filter((a) => !alreadyEnriched.includes(a)).sort((a, b) => b.bestScore - a.bestScore);
     const perRun = Math.min(config.maxAccountsPerRun, limit);
     const plans = todo.slice(0, perRun).map((a) => planAccount(a, config, apolloCache));

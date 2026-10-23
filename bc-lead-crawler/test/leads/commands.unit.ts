@@ -68,7 +68,7 @@ describe('daily commands', () => {
         const common = ['--data', join(dir, 'data'), '--config', join(dir, 'none.json'), '--settings', join(dir, 'none.json'), '--suppression', join(dir, 'none.txt')];
 
         const found = await cli(['find', '--input', input, ...common]);
-        expect(found.stdout).toMatch(/Qualified projects \(score ≥ 70, verified real, current and in scope\): 2\n {2}CONTACT NEEDED: 1 · RESEARCHING: 1/);
+        expect(found.stdout).toMatch(/Qualified projects \(score ≥ 70, verified real, current and in scope\): 2\n {2}QUALIFIED: 1 · NEEDS_REVIEW: 1/);
         expect(found.stdout).toMatch(/Best opportunities with an approved buyer\n {1,3}95 {2}New 120-unit building/);
         expect(found.stdout).toMatch(/Exact credits for this batch: 2 expected, 2 maximum/);
         expect(found.stdout).toMatch(/No Apollo credits were used/);

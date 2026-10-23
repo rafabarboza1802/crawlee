@@ -16,9 +16,13 @@ const ROLE_TARGETS: Record<AccountKind, RoleTarget[]> = {
             category: 'estimating_preconstruction',
             titles: ['Chief Estimator', 'Senior Estimator', 'Estimator', 'Director of Preconstruction', 'Preconstruction Manager', 'Preconstruction'],
         },
-        { category: 'procurement', titles: ['Subcontractor Manager', 'Vendor Manager', 'Procurement Manager', 'Purchasing Manager', 'Buyout Manager'] },
+        {
+            category: 'procurement',
+            titles: ['Subcontractor Manager', 'Subcontractor Coordinator', 'Vendor Manager', 'Procurement Manager', 'Purchasing Manager', 'Buyout Manager', 'Purchasing'],
+        },
         { category: 'project_leadership', titles: ['Project Executive', 'Senior Project Manager', 'Project Manager'] },
         { category: 'construction_management', titles: ['Construction Manager', 'General Superintendent', 'Superintendent'] },
+        { category: 'business_development', titles: ['Director of Business Development', 'Business Development Manager'] },
         { category: 'leadership', titles: ['Director of Operations', 'Operations Manager', 'President', 'Owner'] },
     ],
     developer: [

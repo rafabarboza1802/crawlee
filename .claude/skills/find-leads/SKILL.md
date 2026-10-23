@@ -38,4 +38,5 @@ It never calls Apollo, never sends anything, never registers anywhere.
 5. Save the memory: commit `data/` (never `data/private/`, which git ignores) and `buyer-registry.json` with
    `chore: update lead database (YYYY-MM-DD)` and push to the current branch.
 
-Never run `npm run prepare-contacts -- --approve`. Never email, call, submit forms or register anywhere.
+Never run `npm run prepare-contacts -- --approve`. Never email, call, submit forms or register anywhere: email
+outreach happens only in the Monday cloud job (`npm run weekly`), under the rules in outreach.config.json.

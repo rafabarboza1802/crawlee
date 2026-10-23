@@ -1,87 +1,134 @@
 # Best Construction lead-generation system
 
-Finds real construction projects in public records, works out which company is buying the work, keeps
-competitors out, and — only when you approve the exact cost — finds the right estimator or preconstruction contact.
-It never emails, calls, submits forms or registers anywhere: outreach is always your decision.
+Every Monday morning this system finds new construction projects in public records, works out which company is
+buying the work, keeps competitors out, finds the right estimator or preconstruction contact, sends a short personal
+introduction email (once sending is switched on), follows up, stops when someone replies, and writes you a report.
+It runs in GitHub's cloud: your computer and Claude do not need to be on.
 
-## How to use it (no code needed)
+## OWNER OPERATIONS
 
-Open a Claude Code session on this repository and type one of these:
+### What happens automatically every Monday
 
-| Say this | What happens | Cost |
-|---|---|---|
-| **Find new Best Construction leads.** | Downloads recent public building permits, checks each project, researches every new company in free public records, blocks competitors, and lists the best opportunities. Updates the lead database and the reports. | Free |
-| **Prepare contacts for today's qualified leads.** | Works out the exact Apollo credits needed to find decision makers at the approved buyers, asks you **once** for the whole batch, then runs only what you approved. | Apollo credits (only after your yes) |
-| **I called Cahill** / **Mark 321 Florida St as follow-up** / **We're bidding the Clarendon project** / **Show my leads** | Updates the lead's status in the database. | Free |
+At about 8:15 AM Pacific, GitHub runs the weekly job (`.github/workflows/bc-weekly-leads.yml`):
 
-Prefer the terminal? The same commands (inside `bc-lead-crawler/`): `npm run find-leads`, `npm run prepare-contacts`,
-`npm run lead-status -- "<lead, address or company>" CONTACTED --note "..."`, `npm run leads`.
+1. **Discover** new building permits from the public sources that are switched on (today: San Francisco).
+2. **Verify** each project: active, has an address, worth at least $100,000, includes our work (demolition,
+   excavation, grading, sitework, utilities, concrete, paving/hardscape, clearing, hauling). Small interior remodels
+   and tiny repairs are rejected.
+3. **Identify** the GC, developer and owner named on the permit, and **classify** the company: approved buyer,
+   competitor, small contractor, or needs review. Joint ventures are matched to the partner that runs subcontractor
+   bidding. A word like "Paving" in a name is never enough to block a company; evidence is.
+4. **Score** and **de-duplicate** (one record per project, one email sequence per person).
+5. **Find the decision maker** (estimator, preconstruction, project executive/manager, procurement) at approved
+   buyers with Apollo, only within the credit limits, never twice for the same company.
+6. **Email** each new contact once, then follow up on day 4 and day 10 (3 emails maximum), in the same thread. It
+   stops at once when they reply, unsubscribe, the email bounces, the company turns out to be a competitor, or you mark
+   the lead STOP. Companies that are not proven buyers are never emailed.
+7. **Report**: saves the weekly report, emails it to you, and saves the lead database.
 
-### What you get
+### Where things are
 
-Every "find leads" run writes these files in `bc-lead-crawler/data/reports/`:
-
-| File | What is in it |
+| What | Where |
 |---|---|
-| `summary.md` | Plain-English summary: counts, best opportunities, credits needed for contacts |
-| `qualified-opportunities.csv` | Every pursuable project: name, address, city, county, type, value, permit status, stage, GC, developer/owner, our scope, score, bid timing, why it qualifies, public source link |
-| `approved-buyers.csv` | Companies approved as buyers, why, best scope for us, evidence, open projects |
-| `contacts-awaiting-enrichment.csv` | Approved buyers that still need a decision maker, with credits per company |
-| `rejected-competitors.csv` | Competitors and companies not pursued, with the reason and evidence |
-| `manual-review.csv` | Companies that genuinely need a decision, with the research done so far |
-| `apollo-ledger.csv` | Every paid Apollo request and the credits used this month |
+| This week's report | `bc-lead-crawler/data/reports/weekly/<date>.md` (also emailed to you, with contact names and emails) |
+| Week-by-week history | `bc-lead-crawler/data/reports/weekly-history.csv` |
+| Qualified leads | `bc-lead-crawler/data/reports/qualified-opportunities.csv` (open it on GitHub, or download and open in Excel) |
+| Approved buyers / competitors / needs review | `approved-buyers.csv`, `rejected-competitors.csv`, `manual-review.csv` in the same folder |
+| Apollo spending | `apollo-ledger.csv` in the same folder |
+| Master lead database | `bc-lead-crawler/data/lead-db.json` (public business facts only) |
+| Contact names, emails, email log | `bc-lead-crawler/data/private.vault`, encrypted; only readable with your `LEAD_DATA_KEY` |
 
-Purchased contacts (names, titles, business emails) go to `data/private/reports/contacts.csv`. That folder is never
-saved to GitHub, because this repository is public.
+This repository is public, so names and email addresses are never stored in readable form there. You receive them
+in the Monday email. To get a full private spreadsheet, ask Claude "Export my private CRM" (it runs `npm run crm`).
 
-### How a lead moves
-
-DISCOVER (public permits) → VERIFY PROJECT (active, has an address, worth ≥ $100K, includes our scopes) → SCORE
-(fit, value, stage, recency; ≥ 70 qualifies) → CLASSIFY COMPANY → BUYER GATE → CONTACT ENRICHMENT (paid, approved) →
-VERIFY CONTACT (verified business email on the company's domain, decision-making title) → OUTPUT LEAD.
+### Lead statuses
 
 | Status | Meaning |
 |---|---|
-| NEW | Just discovered; not evaluated yet |
-| RESEARCHING | Good project, but the company needs a buyer decision (manual review) |
-| QUALIFIED | Good project with no GC named yet (or a public project): watch for the contractor |
-| BUYER VERIFIED | Approved buyer, but the contact lookup found nobody usable: call the company or use the LinkedIn search link |
-| CONTACT NEEDED | Approved buyer; decision-maker lookup not done yet |
-| CONTACT FOUND | Decision maker found, but no verified business email |
-| READY FOR OUTREACH | Decision maker with a verified business email |
-| CONTACTED / FOLLOW-UP / BID OPPORTUNITY | Set by you; the system never overwrites them |
-| REJECTED | Not a fit: too small, inactive, homeowner, small contractor, do-not-enrich, or set by you |
-| COMPETITOR | Self-performs our scopes or a known competitor; never contacted |
+| NEW | Just discovered |
+| QUALIFIED | Good project; the buyer still needs a decision maker, or no GC is named yet (watch list) |
+| NEEDS_REVIEW | Good project, but the company is not yet proven to be a buyer. Never emailed |
+| CONTACT_READY | Approved buyer with a verified business email; first email goes out on the next run |
+| CONTACTED / FOLLOW_UP | Emails sent; waiting for a reply |
+| REPLIED | They answered; follow-ups stopped; your turn |
+| ESTIMATING / BID_INVITED / BID_SUBMITTED / WON / LOST | Set by you |
+| COMPETITOR | Self-performs our scopes or a known competitor. Never contacted |
+| DO_NOT_CONTACT | Opted out, bounced, blocked or STOP. Never contacted again |
+| REJECTED | Not a fit (too small, inactive, homeowner, unrelated) |
 
-### Who counts as a buyer
+The system never overwrites a status you set.
 
-- **Buyer** (may get contacts): a large GC, builder, developer or prime contractor with public evidence that it invites
-  subcontractor bids for our scopes (demolition, excavation, grading, sitework, land clearing, concrete flatwork and
-  removal, site utilities, hauling, paving, pavers/hardscape) and does not do that work itself. Approved now: **Cahill
-  Contractors** and **Nibbi Brothers**.
-- **Competitor** (blocked): evidence that it does our scopes itself (its own demolition/grading/paving permits, its
-  own description) or a competitor you named. A word like "Paving" or "Demolition" in the name is never enough.
-- **Not pursued**: small contractors (small permit history, small current job) and companies you excluded.
-- **Manual review**: everything else. It never uses credits.
-- **Joint ventures** are matched to the partner that runs subcontractor bidding (e.g. the Cahill/Guzman JV → Cahill).
+### How to…
 
-Decisions live in `buyer-registry.json`, and Claude records research there so you are not asked twice.
+| I want to… | Do this |
+|---|---|
+| **See qualified leads** | Open the Monday email, or `data/reports/qualified-opportunities.csv` on GitHub. In Claude: "Show my leads." |
+| **Pause all emails** | GitHub → repository **Settings → Secrets and variables → Actions → Variables** → create `OUTREACH_MODE` with value `off`. Delete it (or set `test`) to resume. Takes effect on the next run. |
+| **Block a company** | Add its name or web domain on a new line in `bc-lead-crawler/data/blocklist.txt` (GitHub: open the file → pencil icon → Commit). Or tell Claude "Block <company>". For a competitor, Claude also records it in `buyer-registry.json`. |
+| **Stop emails to one lead** | Add a line `<company or address>,STOP,<note>` to `data/owner-updates.csv`, or tell Claude "Stop emailing <company>". |
+| **Mark a lead WON / LOST / BID_INVITED…** | Add `<company or address>,WON,<note>` to `data/owner-updates.csv` (applied on the next run), or tell Claude "Mark Clarendon as won". |
+| **Change sending limits** | Edit `bc-lead-crawler/outreach.config.json` → `limits` (`maxNewPerRun`: new prospects per week, default 10; `maxEmailsPerRun`: all emails per week, default 25; `delaySeconds` between emails) and `sequence` (`followUpDays` [4, 10], `maxEmails` 3). |
+| **Change the Apollo budget** | Edit `bc-lead-crawler/enrich.config.json`: `monthlyCreditCap` (500), `monthlyBudgetUsd` (50), `autoEnrich.maxCreditsPerRun` (20 per weekly run), `autoEnrich.enabled` (false = only with your approval). |
+| **Run it now** | GitHub → **Actions** → "Best Construction weekly leads" → **Run workflow** (choose email mode `test` or `off` for a safe run). In Claude: "Find new Best Construction leads." |
+| **Turn on real sending** | After a successful test run, fill in `liveAuthorization` (your name and the date) and the `sender` details in `outreach.config.json`, and set `"mode": "live"`. |
 
-### Money safety (Apollo)
+### When something fails
 
-Before any paid request the system checks that the company is an approved buyer, the project scores ≥ 70, the company
-was never looked up before, and cached results are reused. It also checks the monthly cap: **500 credits / $50**,
-counted in `data/apollo-ledger.json`. One approval covers one exact batch; if anything changes, it asks again. The
-API key is read from the `APOLLO_API_KEY` environment setting only, and is never written to files or logs. Personal
-emails and phone reveals are off.
+- **A permit source is down**: the run continues with the other sources; the report lists the failed source under
+  "Errors and source failures", and the GitHub run is marked red so GitHub emails you.
+- **Email login fails** (password change, revoked access): nothing is sent, nothing is lost. Emails stay queued for
+  the next run, and the report says what to fix.
+- **Apollo fails or the budget is reached**: the leads stay QUALIFIED and are retried next week.
+- **The encryption key is missing or wrong**: no contacts are bought and no emails are sent (to avoid buying or
+  emailing twice); discovery and the report still run.
+
+### Email rules (built in)
+
+- Plain-text emails, personalized with the recipient's first name, company, project, location, and only the
+  scopes that project involves. No claims about licences, bonding, experience or past projects.
+- Every email identifies Best Construction Inc., includes the website, your mailing address and an opt-out line
+  ("reply unsubscribe"). A List-Unsubscribe header is also included.
+- Only Apollo-verified business emails on the company's own domain are used. Addresses are never guessed.
+- Conservative limits: 10 new prospects and 25 emails per week, at most 1 email per company per run, 30 seconds
+  between emails. One sequence per person; the same person is not approached again within 60 days.
+- Suppression lists: opt-outs, permanent bounces, competitors and your blocks. Never emailed again.
+- **Test mode** sends every message to your test address only, marked [TEST]. **Live mode** refuses to start
+  until a test has passed and you have filled in `liveAuthorization`.
+
+### One-time setup (secrets)
+
+All credentials go in GitHub → **Settings → Secrets and variables → Actions → Secrets**, never in files:
+
+| Secret | What it is |
+|---|---|
+| `LEAD_DATA_KEY` | A long random password you invent (keep a copy in your password manager). Encrypts private data. |
+| `APOLLO_API_KEY` | Your Apollo API key |
+| `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET` | From Google Cloud Console → APIs & Services → Credentials → OAuth client (Desktop app), with the Gmail API enabled |
+| `GMAIL_REFRESH_TOKEN` | Authorizes the sending mailbox: run `npx tsx scripts/gmail-auth.ts` on your computer (see below) |
+| `OUTREACH_FROM` | The Best Construction mailbox that sends (the one you authorized) |
+| `OUTREACH_TEST_TO` | A company-controlled address that receives test emails |
+| `OWNER_REPORT_TO` | Where the Monday report goes |
+
+Gmail authorization (Google Workspace): in Google Cloud Console create a project, enable the **Gmail API**, set the
+OAuth consent screen to **Internal** (Workspace) so the authorization does not expire, create an **OAuth client ID**
+of type **Desktop app**, then on your computer run
+`GMAIL_CLIENT_ID=… GMAIL_CLIENT_SECRET=… npx tsx scripts/gmail-auth.ts` inside `bc-lead-crawler`, sign in with the
+sending mailbox, and paste the printed token into the `GMAIL_REFRESH_TOKEN` secret. Scopes requested: send, and read
+(only to detect replies, bounces and unsubscribe requests). No password is stored anywhere.
 
 ### Where it looks
 
-Today: San Francisco building permits (DataSF, refreshed daily). Priority counties for expansion: Contra Costa,
-Alameda, Santa Clara, Sonoma and San Mateo. Each needs its public permit dataset confirmed and its website allowed in
-this environment; it is then added to `sources.config.json` without code (see `sources.config.example.json`).
-Settings such as the look-back window, minimum score and minimum project value are in `leads.config.json` (optional;
-defaults shown in `src/leads/settings.ts`).
+Working today: **San Francisco** building permits (DataSF, public, refreshed daily). Other counties (Contra Costa,
+Alameda, Santa Clara, San Mateo, Sonoma, and later all of California) are added in `sources.config.json` once their
+official open-data permit dataset is confirmed; no code change is needed (see `sources.config.example.json` and
+"Adding a jurisdiction" below). A source that is not confirmed is never reported as working.
+
+### Doing it by hand (optional)
+
+The earlier commands still work inside `bc-lead-crawler/`: `npm run find-leads` (free discovery), `npm run
+prepare-contacts` (Apollo estimate, then `-- --approve <id>`), `npm run lead-status -- "<lead|company>" WON`,
+`npm run leads`, `npm run outreach-sample` (one sample email to the test address), `npm run crm` (private
+spreadsheet, needs `LEAD_DATA_KEY`), and `npm run weekly` (the whole Monday job).
 
 ---
 
@@ -100,6 +147,20 @@ survive new sessions. It holds public business information only, never purchased
 
 > This folder is self-contained (own `package.json`, uses the published `crawlee@3.18.2` from npm) so it can be
 > moved into its own repository with `git subtree split --prefix=bc-lead-crawler`.
+
+## Weekly automation (technical)
+
+- `src/weekly/main.ts` (`npm run weekly`): the Monday job. Steps are isolated: a failing source, Apollo or the
+  mailbox is recorded in the report and the run continues; the process exits non-zero when anything failed so GitHub
+  flags the run.
+- `src/outreach/`: `engine.ts` (inbox sync → stop rules → send queue → limits → test/live sending), `gmail.ts` (Gmail
+  API over OAuth refresh token, `fetch` only), `templates.ts` (3-step plain-text sequence), `store.ts` (private
+  outreach log, hashed public suppression list), `vault.ts` (AES-256-GCM encryption of `data/private` into
+  `data/private.vault`, key from `LEAD_DATA_KEY`), `config.ts` (modes and limits).
+- `src/weekly/enrich.ts`: automatic Apollo lookups for approved buyers within `autoEnrich.maxCreditsPerRun` and the
+  monthly cap. `src/weekly/owner-updates.ts`: applies `data/owner-updates.csv` once per row.
+- Public state in `data/`: `lead-db.json` (leads, companies, outreach summaries without names), `suppression.json`
+  (sha256 of suppressed emails), `outreach-state.json`, `apollo-ledger.json`, `research-cache.json`, reports.
 
 ## Website crawler
 

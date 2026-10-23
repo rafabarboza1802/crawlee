@@ -106,6 +106,7 @@ describe('role targets (owner priority list)', () => {
             'procurement',
             'project_leadership',
             'construction_management',
+            'business_development',
             'leadership',
         ]);
         expect(targetTitles('contractor')).toEqual(

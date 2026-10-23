@@ -1,0 +1,4 @@
+# Companies or web domains that must never be emailed. One per line, e.g.:
+#   Some Company Name
+#   somecompany.com
+# This file is public: do not put people's email addresses here (ask Claude to "block <email>" instead).

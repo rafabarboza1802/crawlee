@@ -8,6 +8,9 @@
         "node": ">=22"
     },
     "scripts": {
+        "weekly": "sh scripts/run.sh src/weekly/main.ts",
+        "outreach-sample": "sh scripts/run.sh src/weekly/main.ts --sample",
+        "crm": "sh scripts/run.sh src/weekly/main.ts --crm",
         "find-leads": "sh scripts/run.sh src/leads/main.ts find",
         "prepare-contacts": "sh scripts/run.sh src/leads/main.ts contacts",
         "lead-status": "sh scripts/run.sh src/leads/main.ts status",

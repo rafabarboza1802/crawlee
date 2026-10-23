@@ -4,7 +4,17 @@ import { dirname } from 'node:path';
 import { z } from 'zod';
 
 import type { CompanyRecord, ContactRecord, LeadDatabaseFile, LeadRecord, LeadStatus } from './types.js';
-import { ContactRecordSchema, LeadDatabaseSchema, OWNER_STATUSES } from './types.js';
+import { ContactRecordSchema, LEGACY_STATUS, LeadDatabaseSchema, OUTREACH_STATUSES } from './types.js';
+
+/** Maps statuses written by the first version of the database to the current names. */
+function migrate(raw: unknown): unknown {
+    const file = raw as { leads?: Record<string, { status: string; history?: { status: string }[] }> };
+    for (const lead of Object.values(file.leads ?? {})) {
+        lead.status = LEGACY_STATUS[lead.status] ?? lead.status;
+        for (const h of lead.history ?? []) h.status = LEGACY_STATUS[h.status] ?? h.status;
+    }
+    return raw;
+}
 
 async function readJson(path: string): Promise<unknown | undefined> {
     try {
@@ -34,7 +44,7 @@ export class LeadDatabase {
 
     static async load(path: string): Promise<LeadDatabase> {
         const raw = await readJson(path);
-        const file = raw ? LeadDatabaseSchema.parse(raw) : { version: 1 as const, updated_at: new Date(0).toISOString(), leads: {}, companies: {} };
+        const file = raw ? LeadDatabaseSchema.parse(migrate(raw)) : { version: 1 as const, updated_at: new Date(0).toISOString(), leads: {}, companies: {}, applied_owner_updates: [] };
         return new LeadDatabase(path, file);
     }
 
@@ -80,14 +90,18 @@ export class LeadDatabase {
     }
 
     /**
-     * Sets a status. The system never overrides a status the owner set (or an owner-only status); the owner can always
+     * Sets a status. Rules: the system never overrides a status the owner set; once outreach started the system only
+     * moves a lead forward (CONTACTED → FOLLOW_UP → REPLIED) or to COMPETITOR / DO_NOT_CONTACT. The owner can always
      * change it. Returns false when the change was not applied.
      */
-    setStatus(id: string, status: LeadStatus, reason: string, by: 'system' | 'owner', now: Date): boolean {
+    setStatus(id: string, status: LeadStatus, reason: string, by: 'system' | 'owner', now: Date, options: { allowBackward?: boolean } = {}): boolean {
         const lead = this.file.leads[id];
         if (!lead) return false;
         if (by === 'system' && lead.status_by === 'owner') return false;
-        if (by === 'system' && OWNER_STATUSES.includes(status)) throw new Error(`${status} can only be set by the owner.`);
+        if (by === 'system' && !options.allowBackward && OUTREACH_STATUSES.includes(lead.status)) {
+            const forward = OUTREACH_STATUSES.indexOf(status) > OUTREACH_STATUSES.indexOf(lead.status);
+            if (!forward && status !== 'COMPETITOR' && status !== 'DO_NOT_CONTACT' && status !== lead.status) return false;
+        }
         if (lead.status === status && lead.status_reason === reason && lead.status_by === by) return true;
         const at = now.toISOString();
         lead.status = status;

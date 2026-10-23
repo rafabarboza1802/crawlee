@@ -3,22 +3,26 @@ import { z } from 'zod';
 import { OpportunitySchema } from '../discover/types.js';
 
 /**
- * Lead lifecycle. The system sets the automatic statuses on every run; CONTACTED, FOLLOW-UP and BID OPPORTUNITY (and
- * any status the owner sets by hand) are never overwritten by the system.
+ * Lead lifecycle (owner's list, 2026-10-23, plus REJECTED). The pipeline sets the pre-outreach statuses, the outreach
+ * engine sets CONTACTED / FOLLOW_UP / REPLIED, and the owner sets the sales outcomes. A status set by the owner is never
+ * overwritten by the system.
  */
 export const LEAD_STATUSES = [
     'NEW',
-    'RESEARCHING',
     'QUALIFIED',
-    'BUYER VERIFIED',
-    'CONTACT NEEDED',
-    'CONTACT FOUND',
-    'READY FOR OUTREACH',
+    'NEEDS_REVIEW',
+    'CONTACT_READY',
     'CONTACTED',
-    'FOLLOW-UP',
-    'BID OPPORTUNITY',
-    'REJECTED',
+    'FOLLOW_UP',
+    'REPLIED',
+    'ESTIMATING',
+    'BID_INVITED',
+    'BID_SUBMITTED',
+    'WON',
+    'LOST',
     'COMPETITOR',
+    'DO_NOT_CONTACT',
+    'REJECTED',
 ] as const;
 export const LeadStatusSchema = z.enum(LEAD_STATUSES);
 export type LeadStatus = z.infer<typeof LeadStatusSchema>;
@@ -26,21 +30,38 @@ export type LeadStatus = z.infer<typeof LeadStatusSchema>;
 /** What each status means (shown in reports and the README). */
 export const STATUS_MEANING: Record<LeadStatus, string> = {
     NEW: 'Just discovered; not evaluated yet.',
-    RESEARCHING: 'Good project, but the company needs a buyer decision (manual review).',
-    QUALIFIED: 'Good project with no GC/buyer named yet (or a public project): watch for the contractor.',
-    'BUYER VERIFIED': 'Approved buyer; contact lookup found nobody usable. Use the company phone or the LinkedIn search link.',
-    'CONTACT NEEDED': 'Approved buyer; decision-maker lookup not done yet (run "prepare contacts").',
-    'CONTACT FOUND': 'Decision maker found, but no verified business email yet.',
-    'READY FOR OUTREACH': 'Decision maker with a verified business email. Ready for you to reach out.',
-    CONTACTED: 'You contacted them (set by you).',
-    'FOLLOW-UP': 'Follow-up due (set by you).',
-    'BID OPPORTUNITY': 'Invited to bid / bid in progress (set by you).',
-    REJECTED: 'Not a fit (too small, inactive, homeowner, do-not-enrich, or set by you).',
-    COMPETITOR: 'Company self-performs our scopes or is a known competitor. Never contacted.',
+    QUALIFIED: 'Good project. The buyer still needs a decision maker, or no GC is named yet (watch).',
+    NEEDS_REVIEW: 'Good project, but the company is not yet proven to be a buyer. Never emailed.',
+    CONTACT_READY: 'Approved buyer with a verified decision maker; outreach starts on the next run (if sending is on).',
+    CONTACTED: 'First email sent.',
+    FOLLOW_UP: 'Follow-up email(s) sent; waiting for a reply.',
+    REPLIED: 'They replied. Follow-ups stopped; your turn.',
+    ESTIMATING: 'You are estimating the job (set by you).',
+    BID_INVITED: 'Invited to bid (set by you).',
+    BID_SUBMITTED: 'Bid submitted (set by you).',
+    WON: 'Won (set by you).',
+    LOST: 'Lost (set by you).',
+    COMPETITOR: 'Self-performs our scopes or a known competitor. Never contacted.',
+    DO_NOT_CONTACT: 'Opted out, bounced, blocked or excluded. Never contacted again.',
+    REJECTED: 'Not a fit: too small, inactive, homeowner, small contractor or unrelated scope.',
 };
 
-/** Statuses only the owner sets; the system never changes a lead away from them. */
-export const OWNER_STATUSES: LeadStatus[] = ['CONTACTED', 'FOLLOW-UP', 'BID OPPORTUNITY'];
+/** Statuses only the owner sets (sales outcomes). */
+export const OWNER_STATUSES: LeadStatus[] = ['ESTIMATING', 'BID_INVITED', 'BID_SUBMITTED', 'WON', 'LOST'];
+
+/** Outreach progress: the pipeline never moves a lead back from these (only forward, or to COMPETITOR/DO_NOT_CONTACT). */
+export const OUTREACH_STATUSES: LeadStatus[] = ['CONTACTED', 'FOLLOW_UP', 'REPLIED'];
+
+/** Statuses from the first version of the database, mapped on load. */
+export const LEGACY_STATUS: Record<string, LeadStatus> = {
+    RESEARCHING: 'NEEDS_REVIEW',
+    'BUYER VERIFIED': 'QUALIFIED',
+    'CONTACT NEEDED': 'QUALIFIED',
+    'CONTACT FOUND': 'QUALIFIED',
+    'READY FOR OUTREACH': 'CONTACT_READY',
+    'FOLLOW-UP': 'FOLLOW_UP',
+    'BID OPPORTUNITY': 'BID_INVITED',
+};
 
 export const LeadProjectSchema = z.object({
     name: z.string(),
@@ -82,6 +103,20 @@ export const LeadRecordSchema = z.object({
     project: LeadProjectSchema,
     company_id: z.string().nullable(),
     owner_note: z.string().optional(),
+    /** Outreach summary (no names or emails: those live in the encrypted private store). */
+    outreach: z
+        .object({
+            contact_id: z.string(),
+            sequence_id: z.string(),
+            state: z.enum(['active', 'replied', 'opted_out', 'bounced', 'stopped', 'completed']),
+            emails_sent: z.number(),
+            first_sent_at: z.string(),
+            last_sent_at: z.string(),
+            next_due_at: z.string().nullable(),
+            replied_at: z.string().optional(),
+            stop_reason: z.string().optional(),
+        })
+        .optional(),
     /** Latest public record, kept for qualified leads so contacts can be prepared later without re-discovery. */
     opportunity: OpportunitySchema.optional(),
 });
@@ -125,6 +160,8 @@ export const LeadDatabaseSchema = z.object({
     updated_at: z.string(),
     leads: z.record(z.string(), LeadRecordSchema),
     companies: z.record(z.string(), CompanyRecordSchema),
+    /** Rows of data/owner-updates.csv already applied (by content hash), so each is applied once. */
+    applied_owner_updates: z.array(z.string()).default([]),
 });
 export type LeadDatabaseFile = z.infer<typeof LeadDatabaseSchema>;
 

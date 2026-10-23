@@ -88,7 +88,11 @@ export function verifyProject(o: Opportunity, settings: LeadSettings, now: Date)
     if (o.estimated_value !== null && o.estimated_value < settings.minProjectValue) {
         problems.push(`Project value ${money(o.estimated_value)} is below ${money(settings.minProjectValue)}`);
     }
-    if (!targetScopes(o).length) problems.push('No Best Construction scope in the permit (remodel/interior work only)');
+    const scopes = targetScopes(o);
+    if (!scopes.length) problems.push('No Best Construction scope in the permit (remodel/interior work only)');
+    else if (scopes.every((s) => s === 'Interior demolition') && (o.estimated_value ?? 0) < settings.minInteriorOnlyValue) {
+        problems.push(`Small interior remodel (interior demolition only, under ${money(settings.minInteriorOnlyValue)})`);
+    }
     return problems;
 }
 

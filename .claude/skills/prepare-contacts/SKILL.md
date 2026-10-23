@@ -12,7 +12,8 @@ enforced in code.
 ## Steps
 
 1. `cd bc-lead-crawler` (run `npm ci` if `node_modules` is missing).
-2. If `data/lead-db.json` has no leads in CONTACT NEEDED, run the find-leads workflow first.
+2. The Monday cloud job already buys contacts automatically within `autoEnrich.maxCreditsPerRun` (enrich.config.json).
+   This workflow is for an extra batch on demand. If there are no QUALIFIED leads of approved buyers, run find-leads first.
 3. Run `npm run prepare-contacts` (free estimate). It prints the companies, the checks, the EXACT credits (expected and
    maximum) and a batch id. If it says nothing is waiting, tell the owner and stop.
 4. Ask the owner ONE question for the whole batch (use AskUserQuestion): list each company with its best project and

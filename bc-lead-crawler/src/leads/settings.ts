@@ -13,6 +13,8 @@ export const LeadSettingsSchema = z.object({
     storeMinScore: z.number().min(0).max(100).default(40),
     /** Projects with a known value below this are too small for the target buyers. */
     minProjectValue: z.number().min(0).default(100_000),
+    /** Interior-only work (our only scope is interior demolition) below this value is a small remodel: rejected. */
+    minInteriorOnlyValue: z.number().min(0).default(1_000_000),
     /** Bay Area priority (owner, 2026-10-23); other California counties are kept but ranked lower. */
     priorityCounties: z.array(z.string()).default(['San Francisco', 'Contra Costa', 'Alameda', 'Santa Clara', 'Sonoma', 'San Mateo']),
     /** Permit sources to run (see `npm run discover -- --list-sources` and sources.config.json). */

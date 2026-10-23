@@ -1,0 +1,15 @@
+{
+    "mode": "test",
+    "liveAuthorization": null,
+    "sender": {
+        "name": "",
+        "title": "",
+        "company": "Best Construction Inc.",
+        "website": "https://bestconstruction.pro",
+        "phone": "",
+        "postalAddress": ""
+    },
+    "limits": { "maxNewPerRun": 10, "maxEmailsPerRun": 25, "maxPerDomainPerRun": 1, "delaySeconds": 30, "maxTestPerRun": 3 },
+    "sequence": { "followUpDays": [4, 10], "maxEmails": 3, "contactCooldownDays": 60 },
+    "ownerReportEmail": true
+}

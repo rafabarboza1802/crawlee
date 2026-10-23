@@ -25,6 +25,13 @@ export const EnrichConfigSchema = z.object({
     cacheTtlDays: z.number().int().positive().default(90),
     /** Minimum name similarity (0–1) to accept an Apollo organization match; below it, no further spend. */
     minOrgMatch: z.number().min(0).max(1).default(0.85),
+    /**
+     * Weekly automation: decision-maker lookups for approved buyers run without a per-batch approval, but never more
+     * than this many credits per run and never past the monthly cap. Set enabled=false to require manual approval.
+     */
+    autoEnrich: z
+        .object({ enabled: z.boolean().default(true), maxCreditsPerRun: z.number().int().min(0).default(20) })
+        .default({ enabled: true, maxCreditsPerRun: 20 }),
     apolloCredits: z
         .object({
             organizationSearch: z.number().min(0).default(1),

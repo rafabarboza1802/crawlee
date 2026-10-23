@@ -4,3 +4,8 @@ storage
 dist
 suppression.txt
 data/private
+.env
+.env.*
+*.pem
+credentials*.json
+token*.json
