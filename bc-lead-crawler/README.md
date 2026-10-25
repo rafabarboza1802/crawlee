@@ -110,11 +110,12 @@ All credentials go in GitHub → **Settings → Secrets and variables → Action
 | `OWNER_REPORT_TO` | Where the Monday report goes |
 
 Gmail authorization (Google Workspace): in Google Cloud Console create a project, enable the **Gmail API**, set the
-OAuth consent screen to **Internal** (Workspace) so the authorization does not expire, create an **OAuth client ID**
-of type **Desktop app**, then on your computer run
-`GMAIL_CLIENT_ID=… GMAIL_CLIENT_SECRET=… npx tsx scripts/gmail-auth.ts` inside `bc-lead-crawler`, sign in with the
-sending mailbox, and paste the printed token into the `GMAIL_REFRESH_TOKEN` secret. Scopes requested: send, and read
-(only to detect replies, bounces and unsubscribe requests). No password is stored anywhere.
+OAuth consent screen to **Internal** (Workspace) so the authorization does not expire, and create an **OAuth client
+ID** of type **Desktop app**. Then on your computer, inside `bc-lead-crawler` (after `npm ci`), run
+`npx tsx scripts/gmail-auth.ts`. It asks for the client ID and secret (the secret is not shown), opens Google's
+sign-in page in your browser, and prints the refresh token. Sign in with the sending mailbox and paste the token into
+the `GMAIL_REFRESH_TOKEN` secret. If the browser does not open, paste the short `http://127.0.0.1:…` link it prints.
+Scopes requested: send, and read (only to detect replies, bounces and unsubscribe requests). No password is stored.
 
 ### Where it looks
 
