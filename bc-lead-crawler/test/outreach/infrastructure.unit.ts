@@ -141,6 +141,19 @@ describe('weekly scheduler (GitHub Actions)', () => {
         expect(wf).toMatch(/concurrency:/);
     });
 
+    test('npm only runs inside bc-lead-crawler (the repository root requires pnpm via devEngines)', async () => {
+        const wf = await readFile(workflowPath, 'utf8');
+        // setup-node's npm cache runs `npm config get cache` in the repository root, which fails with EBADDEVENGINES.
+        expect(wf).not.toMatch(/^\s*cache:\s*npm/m);
+        expect(wf).toMatch(/node-version: 22/);
+        expect(wf).toMatch(/defaults:\s*\n\s*run:\s*\n\s*working-directory: bc-lead-crawler/);
+        const root = JSON.parse(await readFile(new URL('../../../package.json', import.meta.url), 'utf8')) as { devEngines?: { packageManager?: { name: string } } };
+        const own = JSON.parse(await readFile(new URL('../../package.json', import.meta.url), 'utf8')) as { devEngines?: unknown; engines?: { node?: string } };
+        expect(root.devEngines?.packageManager?.name).toBe('pnpm');
+        expect(own.devEngines).toBeUndefined();
+        expect(own.engines?.node).toBe('>=22');
+    });
+
     test('secrets only come from GitHub Secrets, and private data can never be committed', async () => {
         const wf = await readFile(workflowPath, 'utf8');
         for (const name of ['LEAD_DATA_KEY', 'APOLLO_API_KEY', 'GMAIL_CLIENT_ID', 'GMAIL_CLIENT_SECRET', 'GMAIL_REFRESH_TOKEN', 'OUTREACH_FROM', 'OUTREACH_TEST_TO', 'OWNER_REPORT_TO']) {
