@@ -1,3 +1,3 @@
 date,sources_ok,sources_failed,projects_scanned,new_opportunities,qualified,rejected,needs_review,competitors_blocked,contacts_discovered,apollo_credits,apollo_cost_usd,email_mode,emails_sent,follow_ups_sent,test_emails,replies,bounces,opt_outs,bid_invitations,errors
 2026-10-23,1,0,3413,0,62,679,14,5,0,0,,test (not run),0,0,0,0,0,0,0,1
-2026-10-25,1,0,3172,0,56,632,15,4,0,0,,test,0,0,0,0,0,0,0,2
+2026-10-25,1,0,3172,0,57,632,15,4,0,2,,test,0,0,0,0,0,0,0,0
