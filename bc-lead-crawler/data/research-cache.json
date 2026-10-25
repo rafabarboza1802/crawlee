@@ -513,6 +513,72 @@
           "202311070361 otc alterations permit $20,000: demolish and repour new concrete slab in garage. approx 800sf. 6\" thick with 3500 psi conc"
         ]
       }
+    },
+    "research:sf-permits:626859": {
+      "retrieved_at": "2026-10-25T03:56:10.289Z",
+      "value": {
+        "license": "626859",
+        "since": "2023-10-26",
+        "permits": 7,
+        "newBuildings": 0,
+        "totalValue": 79105,
+        "largestValue": 54100,
+        "specialistPermits": 1,
+        "examples": [
+          "202511200084 additions alterations or repairs $54,100: altered site permit to issued site pa# 201602129550-s. eliminate basement & occupancies a-",
+          "202403067235 otc alterations permit $25,000: excavating and installing new 6\" fire line to feed new spirnkler system. will also be inst",
+          "202403067235 otc alterations permit $25,000: excavating and installing new 6\" fire line to feed new spirnkler system. will also be inst"
+        ]
+      }
+    },
+    "research:sf-permits:1117179": {
+      "retrieved_at": "2026-10-25T03:56:10.289Z",
+      "value": {
+        "license": "1117179",
+        "since": "2023-10-26",
+        "permits": 2,
+        "newBuildings": 0,
+        "totalValue": 715515,
+        "largestValue": 650000,
+        "specialistPermits": 0,
+        "examples": [
+          "202602065491 additions alterations or repairs $650,000: remove and replace underground storage tanks in the same hole. replace underground piping ",
+          "202408239380 otc alterations permit $65,515: replace apt-xp piping and test boots."
+        ]
+      }
+    },
+    "research:sf-permits:732107": {
+      "retrieved_at": "2026-10-25T03:56:10.289Z",
+      "value": {
+        "license": "732107",
+        "since": "2023-10-26",
+        "permits": 28,
+        "newBuildings": 0,
+        "totalValue": 27802143,
+        "largestValue": 8789816,
+        "specialistPermits": 1,
+        "examples": [
+          "202406053739 otc alterations permit $8,789,816: 21st fl full floor ti mep upgrades included",
+          "202606183547 additions alterations or repairs $4,556,700: 39th & 40th flrs: tenant improvement including: * selective demolition of offices and pant",
+          "202311301722 otc alterations permit $38,500: demo of (e) ti, including interior non bearing partitions, suspended ceilings, mep fixture"
+        ]
+      }
+    },
+    "research:sf-permits:306094": {
+      "retrieved_at": "2026-10-25T03:56:10.289Z",
+      "value": {
+        "license": "306094",
+        "since": "2023-10-26",
+        "permits": 41,
+        "newBuildings": 0,
+        "totalValue": 21473612,
+        "largestValue": 8000000,
+        "specialistPermits": 0,
+        "examples": [
+          "202501148331 otc alterations permit $8,000,000: level 7-terrace: renovation of the level 7 existing northeast & southwest terrace connecte",
+          "202605191540 otc alterations permit $2,612,800: 5th flr. t.i. single tenant flr, demo and nonstructure partitions +building back non-str. "
+        ]
+      }
     }
   }
 }
