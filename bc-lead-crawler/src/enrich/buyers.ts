@@ -188,9 +188,9 @@ const money = (v: number) => (v >= 1e6 ? `$${(v / 1e6).toFixed(1)}M` : `$${Math.
 
 /**
  * Classifies a new company from its public San Francisco permit history (DataSF). This can prove that a company
- * self-performs (most of its permits are its own demolition/grading jobs) or that it is a large GC, but it cannot prove
- * that the company subcontracts sitework, so research alone never yields "buyer": large GCs go to manual review with
- * the evidence attached. Small contractors (small permit history, no new buildings, small current project) are not
+ * self-performs (most of its permits are its own demolition/grading jobs) or that it is a large GC. Large GCs that do not
+ * self-perform are buyers (they bid out site packages), so their estimators and PMs are looked up; a competitor-risk
+ * word in the name still sends them to manual review. Small contractors (small permit history, no new buildings, small current project) are not
  * target buyers. `projectValue` is the largest current opportunity, so a big out-of-town GC is never dismissed as small.
  */
 export function classifyFromHistory(name: string, history: PermitHistory | undefined, riskSignal?: string, projectValue = 0): BuyerDecision {
@@ -229,6 +229,14 @@ export function classifyFromHistory(name: string, history: PermitHistory | undef
         history.permits >= r.largeGc.minPermits &&
         history.largestValue >= r.largeGc.minLargestValue &&
         (history.newBuildings >= r.largeGc.minNewBuildings || history.totalValue >= r.largeGc.minTotalValue);
+    if (large && !riskSignal) {
+        return {
+            classification: 'buyer',
+            reason: `Large GC by permit history (${summary}), not a sitework specialist: approved for contact lookup. Add it to the registry as a competitor if it self-performs sitework.`,
+            evidence,
+            source: 'permit_research',
+        };
+    }
     return {
         classification: 'uncertain',
         reason:

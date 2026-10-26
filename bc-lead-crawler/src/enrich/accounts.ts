@@ -45,7 +45,8 @@ const ABBREVIATIONS: [RegExp, string][] = [
 ];
 
 export function searchNameFor(name: string): string {
-    let n = cleanCompanyName(name);
+    // Mailing prefixes kept in permit records ("c/o Crescent Heights", "Attn: ...") are not part of the name.
+    let n = cleanCompanyName(name).replace(/^(?:c\/o|attn:?)\s+/i, '');
     const truncated = name.trim().length >= DATASF_NAME_LIMIT;
     // "Legal Name Inc / dba Trade Name": the trade name is what the company is known by, unless it was cut off.
     const dba = /^(.*?)[\s/,]+d\.?b\.?a\.?\s+(.+)$/i.exec(n);

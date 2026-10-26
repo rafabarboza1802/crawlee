@@ -31,6 +31,9 @@ describe('company names: permit spelling → business-database spelling', () => 
         expect(searchNameFor('G Swanson Constr. Inc.')).toBe('G Swanson Construction');
         expect(searchNameFor('Nibbi Bros. General Contractors, Inc.')).toBe('Nibbi Brothers General Contractors');
         expect(searchNameFor('Cahill Contractors LLC')).toBe('Cahill Contractors');
+        // Permit records sometimes keep the mailing prefix ("c/o", "attn"): it is not part of the company name.
+        expect(searchNameFor('c/o Crescent Heights')).toBe('Crescent Heights');
+        expect(searchNameFor('Attn: Mercy Housing California')).toBe('Mercy Housing');
         expect(searchNameFor('Acme Holdings Inc dba Acme Builders')).toBe('Acme Builders');
         // DataSF cuts names at 40 characters: a cut-off trade name is not used.
         expect(searchNameFor('Andrew Chekene Enterprises/ Dba Ac Enter')).toBe('Andrew Chekene Enterprises');

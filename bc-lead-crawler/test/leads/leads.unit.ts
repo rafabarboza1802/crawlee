@@ -26,7 +26,7 @@ async function setup() {
     const contacts = await ContactStore.load(join(dir, 'private', 'contacts.json'));
     const lookups: string[] = [];
     const histories: Record<string, PermitHistory> = {
-        '100': history({ permits: 40, newBuildings: 3, totalValue: 90e6, largestValue: 30e6 }), // large GC: manual review
+        '100': history({ permits: 40, newBuildings: 3, totalValue: 90e6, largestValue: 30e6 }), // large GC: buyer
         '200': history({ permits: 12, totalValue: 1.2e6, largestValue: 2e5 }), // small contractor: not a target
         '300': history({ permits: 10, specialistPermits: 8, totalValue: 3e6, largestValue: 5e5 }), // self-performs: competitor
         '400': history({ permits: 9, totalValue: 2e6, largestValue: 3e5 }), // name risk word, but no self-performing evidence
@@ -98,7 +98,7 @@ describe('lead pipeline: verify → score → classify → buyer gate', () => {
         expect(byGc('Cahill Guzman Construction Group JV')).toEqual(['QUALIFIED']);
         expect(byGc('Cahill Contractors Inc')).toEqual(['QUALIFIED']);
         expect(byGc('Bay Cities Paving & Grading Inc')).toEqual(['COMPETITOR']);
-        expect(byGc('Large Builders Inc')).toEqual(['NEEDS_REVIEW']);
+        expect(byGc('Large Builders Inc')).toEqual(['QUALIFIED']);
         expect(byGc('Tiny Remodel Co')).toEqual(['REJECTED']);
         expect(byGc('Acme Demolition Inc')).toEqual(['COMPETITOR']);
         // A risk word in the name is not enough to block: research found no self-performing.
@@ -154,8 +154,8 @@ describe('lead pipeline: verify → score → classify → buyer gate', () => {
             opp({ contractor: 'Large Builders Inc', license: '100', score: 86 }),
         ]);
         const batch = await planContactBatch(s.db, registry, settings, config, s.apolloCache, s.researchCache, NOW);
-        expect(batch.plans.map((p) => p.account.accountId)).toEqual(['cahill-contractors', 'nibbi-brothers']);
-        expect(batch.estimate).toMatchObject({ creditsExpected: 4, creditsMax: 6 });
+        expect(batch.plans.map((p) => p.account.accountId)).toEqual(['cahill-contractors', 'nibbi-brothers', 'large-builders']);
+        expect(batch.estimate).toMatchObject({ creditsExpected: 6, creditsMax: 9 });
 
         // A lookup under the previous strategy that found no usable email gets exactly one retry...
         s.db.setEnrichment('nibbi-brothers', { status: 'no_people', at: NOW.toISOString(), plan_id: 'x', credits: 1, contact_ids: [], verified_contacts: 0 });
@@ -163,7 +163,7 @@ describe('lead pipeline: verify → score → classify → buyer gate', () => {
         // ...and once the current strategy has run, never again.
         s.db.setEnrichment('nibbi-brothers', { status: 'no_people', at: NOW.toISOString(), plan_id: 'x', credits: 1, contact_ids: [], verified_contacts: 0, strategy: 2 });
         const next = await planContactBatch(s.db, registry, settings, config, s.apolloCache, s.researchCache, NOW);
-        expect(next.plans.map((p) => p.account.accountId)).toEqual(['cahill-contractors']);
+        expect(next.plans.map((p) => p.account.accountId)).toEqual(['cahill-contractors', 'large-builders']);
         expect(next.alreadyEnriched).toEqual(['Nibbi Brothers']);
         expect(next.estimate.planId).not.toBe(batch.estimate.planId);
     });
