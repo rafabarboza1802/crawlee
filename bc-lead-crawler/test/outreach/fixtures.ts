@@ -89,7 +89,7 @@ export async function outreachSetup(over: { mode?: 'off' | 'test' | 'live'; auth
     const config = OutreachConfigSchema.parse({
         mode: over.mode ?? 'live',
         liveAuthorization: over.authorized === false ? null : { by: 'Owner', date: '2026-10-23' },
-        sender: { name: 'Pat Owner', title: 'Estimator', phone: '(555) 010-0000', postalAddress: '1 Example Way, San Francisco, CA 94100' },
+        sender: { name: 'Pat Owner', title: 'Estimator', phone: '(555) 010-0000', licenseNumber: '0000000', postalAddress: '1 Example Way, San Francisco, CA 94100' },
         limits: { delaySeconds: 0 },
     });
     const deps = (now = NOW): OutreachDeps => ({

@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 
+import { sfPipelineSponsors } from '../discover/sources/sf-pipeline.js';
 import { ApolloClient } from '../enrich/apollo.js';
 import { permitHistory } from '../enrich/research.js';
 import { ContactStore } from '../leads/db.js';
@@ -119,20 +120,30 @@ const evaluation = discovered
               db: ws.db,
               researchCache: ws.researchCache,
               lookupHistory: (license) => permitHistory(license, ctx, now),
+              lookupSponsors: (parcels) => sfPipelineSponsors(ctx, parcels),
               suppressed: ws.suppressed,
               now,
           }),
       )
     : undefined;
 
+if (evaluation) {
+    notes.push(...evaluation.warnings);
+    if (evaluation.developersIdentified) notes.push(`Likely developer identified from public records for ${evaluation.developersIdentified} project(s) with no GC on the permit.`);
+}
+
 // 3. FIND DECISION MAKER (Apollo, within the standing credit limits).
 const creditsBefore = ws.ledger.creditsThisMonth(now);
 let contactsDiscovered = 0;
+let verifiedEmails = 0;
+const notEnriched: string[] = [];
 const apolloKey = process.env.APOLLO_API_KEY?.trim();
 if (privateOk && apolloKey) {
     const enriched = await step('Contact lookup (Apollo)', () => autoEnrich(ws, new ApolloClient(apolloKey, process.env.APOLLO_BASE_URL || undefined), now, log));
     if (enriched) {
         contactsDiscovered = enriched.contactsDiscovered;
+        verifiedEmails = enriched.verifiedEmails;
+        notEnriched.push(...enriched.notEnriched);
         notes.push(...enriched.skipped);
     }
 } else if (!apolloKey) {
@@ -171,6 +182,10 @@ const metrics: WeeklyMetrics = {
     needsReview: evaluation?.review.length ?? 0,
     competitorsBlocked: evaluation?.competitors.length ?? 0,
     contactsDiscovered,
+    verifiedEmails,
+    notEnriched,
+    // Qualified projects whose buying company (GC, developer or owner) is identified.
+    companiesIdentified: new Set(ws.db.leads.filter((l) => l.company_id && ['QUALIFIED', 'NEEDS_REVIEW', 'CONTACT_READY', 'CONTACTED', 'FOLLOW_UP', 'REPLIED'].includes(l.status)).map((l) => l.company_id)).size,
     apolloCredits: credits,
     apolloCreditsMonth: creditsMonth,
     apolloCostUsd: ws.config.usdPerCredit === null ? null : Math.round(credits * ws.config.usdPerCredit * 100) / 100,

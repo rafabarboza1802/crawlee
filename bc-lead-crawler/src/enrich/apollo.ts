@@ -22,6 +22,8 @@ export interface ApolloPerson {
     state?: string;
     email?: string;
     emailStatus?: string;
+    /** From the free people search: whether Apollo holds an email for this person (false = never pay for them). */
+    hasEmail?: boolean;
 }
 
 type Json = Record<string, unknown>;
@@ -94,6 +96,7 @@ function parsePersonJson(p: Json): ApolloPerson | undefined {
         state: str(p.state),
         email: str(p.email),
         emailStatus: str(p.email_status),
+        ...(typeof p.has_email === 'boolean' ? { hasEmail: p.has_email } : {}),
     };
 }
 
@@ -105,16 +108,39 @@ export function parseMatchedPerson(json: Json): ApolloPerson | undefined {
     return json.person ? parsePersonJson(json.person as Json) : undefined;
 }
 
-const LEGAL = /\b(?:inc|incorporated|llc|co|corp|corporation|company|ltd|lp|llp|the)\b/g;
-const tokens = (s: string) => new Set(s.toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9 ]+/g, ' ').replace(LEGAL, ' ').split(/\s+/).filter(Boolean));
+const LEGAL = /\b(?:inc|incorporated|llc|co|corp|corporation|company|ltd|lp|llp|the|and)\b/g;
+const SYNONYMS: Record<string, string> = { bros: 'brothers', constr: 'construction', const: 'construction', contractor: 'contractors', builder: 'builders', gc: 'contractors' };
+const tokens = (s: string) =>
+    new Set(
+        s
+            .toLowerCase()
+            .replace(/&/g, ' and ')
+            .replace(/[^a-z0-9 ]+/g, ' ')
+            .replace(LEGAL, ' ')
+            .split(/\s+/)
+            .filter(Boolean)
+            .map((t) => SYNONYMS[t] ?? t),
+    );
 
-/** Dice similarity of name tokens, ignoring legal suffixes (0–1). */
+/**
+ * Similarity of two company names (0–1): Dice over name tokens, ignoring legal suffixes and common abbreviations.
+ * When one name is the other plus descriptive words ("Nibbi Brothers" / "Nibbi Brothers General Contractors") and the
+ * shorter has at least two words, it counts as 0.9.
+ */
 export function nameSimilarity(a: string, b: string): number {
     const ta = tokens(a);
     const tb = tokens(b);
     if (!ta.size || !tb.size) return 0;
     const shared = [...ta].filter((t) => tb.has(t)).length;
-    return (2 * shared) / (ta.size + tb.size);
+    const dice = (2 * shared) / (ta.size + tb.size);
+    const smaller = Math.min(ta.size, tb.size);
+    return smaller >= 2 && shared === smaller ? Math.max(dice, 0.9) : dice;
+}
+
+/** "https://www.cahill-sf.com/about" → "cahill-sf.com" */
+export function domainFromUrl(url: string | undefined): string | undefined {
+    const host = url?.trim().toLowerCase().replace(/^https?:\/\//, '').split(/[/?#:]/)[0]?.replace(/^www\./, '');
+    return host && /^[a-z0-9.-]+\.[a-z]{2,}$/.test(host) ? host : undefined;
 }
 
 const FREE_MAIL = /@(?:gmail|yahoo|hotmail|outlook|aol|icloud|me|comcast|sbcglobal|att|msn|live|protonmail)\./i;

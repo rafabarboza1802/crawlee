@@ -129,12 +129,15 @@ describe('registry classification', () => {
 });
 
 describe('permit-history research', () => {
-    test('never yields buyer: specialists are competitors, small firms are not targets, the rest go to review', () => {
+    test('large GCs are buyers; specialists are competitors, small firms are not targets, the rest go to review', () => {
         expect(classifyFromHistory('X', undefined)).toMatchObject({ classification: 'uncertain', reason: expect.stringMatching(/unavailable/) });
         expect(classifyFromHistory('X', history({ permits: 6, specialistPermits: 4 })).classification).toBe('competitor');
         expect(classifyFromHistory('X', history({ permits: 2, specialistPermits: 2 })).classification).toBe('not_target');
         const large = classifyFromHistory('X', history({ permits: 30, newBuildings: 4, totalValue: 90e6, largestValue: 40e6, specialistPermits: 2 }));
-        expect(large).toMatchObject({ classification: 'uncertain', reason: expect.stringMatching(/^Large GC by permit history/) });
+        expect(large).toMatchObject({ classification: 'buyer', source: 'permit_research', reason: expect.stringMatching(/^Large GC by permit history/) });
+        // A competitor-risk word in the name (e.g. "Paving") still sends a large company to review instead of Apollo.
+        const risky = classifyFromHistory('X Paving', history({ permits: 30, newBuildings: 4, totalValue: 90e6, largestValue: 40e6, specialistPermits: 2 }), 'paving');
+        expect(risky.classification).toBe('uncertain');
         expect(classifyFromHistory('X', history({ permits: 3, totalValue: 2e5, largestValue: 1e5 }))).toMatchObject({ classification: 'not_target', reason: expect.stringMatching(/^Small contractor/) });
         expect(classifyFromHistory('X', history({ permits: 20, totalValue: 9e6, largestValue: 1.5e6 })).reason).toMatch(/^Mid-size contractor/);
         // A big current project means a possibly large out-of-town GC: never dismissed as small.

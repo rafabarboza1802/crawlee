@@ -5,6 +5,7 @@ import { parseArgs } from 'node:util';
 import { ApolloClient } from '../enrich/apollo.js';
 import { executePlans } from '../enrich/execute.js';
 import { permitHistory } from '../enrich/research.js';
+import { sfPipelineSponsors } from '../discover/sources/sf-pipeline.js';
 import { recordEnrichment } from './contacts.js';
 import { type ContactBatch, type EvaluateResult, evaluateOpportunities, isActive, planContactBatch, rankLeads } from './pipeline.js';
 import { money, writeContactsReport, writeReports } from './report.js';
@@ -119,6 +120,7 @@ async function find() {
         db: l.db,
         researchCache: l.researchCache,
         lookupHistory: (license) => permitHistory(license, ctx, now),
+        lookupSponsors: (parcels) => sfPipelineSponsors(ctx, parcels),
         suppressed: l.suppressed,
         now,
     });

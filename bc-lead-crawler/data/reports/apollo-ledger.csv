@@ -2,4 +2,12 @@ at,month,plan_id,company_id,endpoint,credits,http_status
 2026-10-25T23:49:53.857Z,2026-10,297b8285f2f9,cahill-contractors,mixed_companies/search,1,200
 2026-10-25T23:49:54.048Z,2026-10,297b8285f2f9,cahill-contractors,mixed_people/api_search,0,200
 2026-10-25T23:49:54.338Z,2026-10,297b8285f2f9,cahill-contractors,people/match,1,200
-# 2026-10: 2 credits used
+2026-10-26T01:26:44.660Z,2026-10,3c7eec0efffc,cahill-contractors,mixed_people/api_search,0,200
+2026-10-26T01:26:44.964Z,2026-10,3c7eec0efffc,cahill-contractors,people/match,1,200
+2026-10-26T01:26:45.103Z,2026-10,3c7eec0efffc,ivyhills,mixed_companies/search,1,200
+2026-10-26T01:26:45.276Z,2026-10,3c7eec0efffc,crescent-haights,mixed_companies/search,1,200
+2026-10-26T01:26:45.488Z,2026-10,3c7eec0efffc,principal-builders,mixed_companies/search,1,200
+2026-10-26T01:26:45.662Z,2026-10,3c7eec0efffc,principal-builders,mixed_people/api_search,0,200
+2026-10-26T01:26:46.749Z,2026-10,3c7eec0efffc,principal-builders,people/match,1,200
+2026-10-26T01:26:46.921Z,2026-10,3c7eec0efffc,clune-construction-company-l-p,mixed_companies/search,1,200
+# 2026-10: 8 credits used

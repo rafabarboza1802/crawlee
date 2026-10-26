@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import type { Account } from './accounts.js';
 import type { EnrichConfig } from './config.js';
+import { domainFromUrl } from './apollo.js';
 import { targetTitles } from './roles.js';
 import type { LookupCache } from './store.js';
 
@@ -52,9 +53,11 @@ const APOLLO = 'https://api.apollo.io/api/v1';
  */
 export function planAccount(account: Account, config: EnrichConfig, cache: LookupCache): AccountPlan {
     const c = config.apolloCredits;
+    const domain = domainFromUrl(account.buyer?.website);
     const orgKey = `apollo:org-search:${account.accountId}`;
-    const peopleKey = `apollo:people-search:${account.accountId}:${account.kind}`;
-    const orgCached = cache.has(orgKey);
+    const peopleKey = `apollo:people-search:v2:${account.accountId}:${account.kind}`;
+    // A known company domain (registry) replaces the paid organization search.
+    const orgCached = !!domain || cache.has(orgKey);
     const peopleCached = cache.has(peopleKey);
 
     const calls: PlannedCall[] = [
@@ -68,7 +71,9 @@ export function planAccount(account: Account, config: EnrichConfig, cache: Looku
             cacheKey: orgKey,
             cached: orgCached,
             credits: orgCached ? 0 : c.organizationSearch,
-            condition: `Always. Accept the best match only if name similarity ≥ ${config.minOrgMatch} and the company is in California; otherwise stop for this company (review_needed). Gives website, LinkedIn company page and company phone.`,
+            condition: domain
+                ? `Skipped: company domain ${domain} is known from the buyer registry, so people are searched by domain (free).`
+                : `Always. Accept the best match only if name similarity ≥ ${config.minOrgMatch} and the company is in California; otherwise stop for this company (review_needed). Gives website, LinkedIn company page and company phone.`,
         },
         {
             accountId: account.accountId,
@@ -76,11 +81,11 @@ export function planAccount(account: Account, config: EnrichConfig, cache: Looku
             provider: 'apollo',
             method: 'POST',
             endpoint: `${APOLLO}/mixed_people/api_search`,
-            body: { organization_ids: ['<id from step 1>'], person_titles: targetTitles(account.kind), page: 1, per_page: 10 },
+            body: { ...(domain ? { q_organization_domains_list: [domain] } : { organization_ids: ['<id from step 1>'] }), person_titles: targetTitles(account.kind), page: 1, per_page: 25 },
             cacheKey: peopleKey,
             cached: peopleCached,
             credits: peopleCached ? 0 : c.peopleSearch,
-            condition: `Only if step 1 matched. Returns names, titles and LinkedIn profile URLs (no emails). The top ${config.maxCandidatesPerAccount} by role priority are kept.`,
+            condition: `Only if step 1 matched. Returns titles and whether Apollo holds an email (no emails). People without an email are dropped; the top ${config.maxCandidatesPerAccount} by role priority are kept.`,
         },
     ];
     for (let i = 0; i < config.maxEnrichedPerAccount; i++) {

@@ -17,9 +17,9 @@ export const EnrichConfigSchema = z.object({
     monthlyCreditCap: z.number().int().positive().default(500),
     maxAccountsPerRun: z.number().int().positive().default(25),
     /** People shortlisted per company from the (free) people search. */
-    maxCandidatesPerAccount: z.number().int().min(1).max(10).default(3),
+    maxCandidatesPerAccount: z.number().int().min(1).max(10).default(5),
     /** People whose verified business email is paid for, per company. Default: the primary contact only. */
-    maxEnrichedPerAccount: z.number().int().min(0).max(3).default(1),
+    maxEnrichedPerAccount: z.number().int().min(0).max(3).default(2),
     /** Direct-dial phone reveals cost extra; off. Business phone comes from the organization record. */
     revealPhones: z.literal(false).default(false),
     cacheTtlDays: z.number().int().positive().default(90),

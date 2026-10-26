@@ -135,6 +135,20 @@ interface Planned {
     sequence?: Sequence;
 }
 
+/** Personalization for one planned email: the GC or the developer/owner, a person or a published bids mailbox. */
+function emailContext(p: Planned, d: OutreachDeps) {
+    const mailbox = p.contact.role_category === 'bid_mailbox';
+    return {
+        firstName: mailbox ? '' : firstNameOf(p.contact.name),
+        ...(mailbox ? { greeting: 'Hello estimating team,' } : {}),
+        company: p.contact.company_name,
+        lead: p.lead,
+        otherLeads: p.others,
+        sender: d.config.sender,
+        audience: p.lead.project.permit_contractor ? ('contractor' as const) : ('owner' as const),
+    };
+}
+
 /** The send queue for this run: due follow-ups first, then new prospects, within the configured limits. */
 export function planSends(d: OutreachDeps): { planned: Planned[]; skipped: string[] } {
     const { db, config, now } = d;
@@ -168,8 +182,9 @@ export function planSends(d: OutreachDeps): { planned: Planned[]; skipped: strin
         }
         const contact = d.contacts
             .forCompany(companyId)
-            .filter((c) => c.verified && c.business_email && c.email_status === 'verified')
-            .sort((a, b) => Number(b.verified) - Number(a.verified))[0];
+            // Apollo-verified decision makers first; a bids mailbox the company publishes on its own website is the fallback.
+            .filter((c) => c.verified && c.business_email && (c.email_status === 'verified' || (c.email_status === 'published' && c.role_category === 'bid_mailbox')))
+            .sort((a, b) => Number(a.role_category === 'bid_mailbox') - Number(b.role_category === 'bid_mailbox'))[0];
         if (!contact) {
             skipped.push(`${company.name}: no verified business email in the private contact store`);
             continue;
@@ -250,7 +265,7 @@ export async function runOutreach(d: OutreachDeps): Promise<OutreachResult> {
     if (mode === 'test') {
         let ok = true;
         for (const p of planned.slice(0, d.config.limits.maxTestPerRun)) {
-            const email = renderEmail(p.step, { firstName: firstNameOf(p.contact.name), company: p.contact.company_name, lead: p.lead, otherLeads: p.others, sender: d.config.sender });
+            const email = renderEmail(p.step, emailContext(p, d));
             const banner = `[TEST MODE — this message was NOT sent to the prospect. It would go to ${maskEmail(p.contact.business_email!)} (${p.contact.title ?? 'contact'}) at ${p.contact.company_name}, email ${p.step} of ${d.config.sequence.maxEmails}.]\n\n`;
             try {
                 await d.provider!.send({ to: d.env.testTo!, subject: `[TEST] ${email.subject}`, text: banner + email.text, unsubscribeMailto: d.env.from });
@@ -275,7 +290,7 @@ export async function runOutreach(d: OutreachDeps): Promise<OutreachResult> {
         const latest = d.db.lead(p.lead.lead_id);
         const block = d.suppression.blockedReason(p.contact.business_email!, p.contact.company_name) ?? stopReason(latest, d.db);
         if (block || (p.sequence && p.sequence.state !== 'active')) continue;
-        const ctx = { firstName: firstNameOf(p.contact.name), company: p.contact.company_name, lead: p.lead, otherLeads: p.others, sender: d.config.sender };
+        const ctx = emailContext(p, d);
         const email = renderEmail(p.step, ctx);
         try {
             const sent = await d.provider!.send({

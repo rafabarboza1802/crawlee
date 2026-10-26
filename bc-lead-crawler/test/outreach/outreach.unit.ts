@@ -17,14 +17,17 @@ describe('email rendering', () => {
         const lead = s.db.lead(s.leads[0]!.opportunity_id)!;
         const ctx = { firstName: 'Sam', company: 'Cahill Contractors', lead, otherLeads: [], sender: s.config.sender };
         const first = renderEmail(1, ctx);
-        expect(first.subject).toBe(`Excavation and sitework and earthwork for ${lead.project.address}`);
+        expect(first.subject).toBe(`Excavation and sitework bid for ${lead.project.address}`);
         expect(first.text).toMatch(/^Hi Sam,/);
+        expect(first.text).toContain('a California subcontractor for demolition, excavation, grading, sitework, concrete, paving and hardscape, and hauling.');
         expect(first.text).toContain(`Public permit records list Cahill Contractors as the contractor on the new 120-unit building at ${lead.project.address}, San Francisco.`);
+        expect(first.text).toContain('Best Construction Inc. · CA License #0000000');
         expect(first.text).toMatch(/add us to your bidder list for those packages, or send the bid invitation and plans/);
         expect(first.text).toContain('bestconstruction.pro');
         expect(first.text).toContain('1 Example Way, San Francisco, CA 94100');
         expect(first.text).toContain(OPT_OUT_LINE);
-        expect(first.text).not.toMatch(/demolition|paving|hardscape/i);
+        // Only this project's scopes are pitched (the intro line lists what we do in general).
+        expect(first.text.split('\n').filter((l) => /bid the/.test(l)).join(' ')).not.toMatch(/demolition|paving|hardscape/i);
         for (const step of [1, 2, 3]) {
             const e = renderEmail(step, ctx);
             expect(e.text).not.toMatch(/licen[sc]ed|bonded|insured|certified|years of experience|award-winning|guarantee/i);
@@ -77,6 +80,7 @@ describe('sending modes and safety', () => {
         expect(readinessProblems(OutreachConfigSchema.parse({ mode: 'live', liveAuthorization: { by: 'Owner', date: '2026-10-23' } }), { from: ME }, 'live', 'x')).toEqual([
             'sender.name is empty in outreach.config.json.',
             'sender.postalAddress is empty (a physical mailing address is legally required).',
+            'sender.licenseNumber is empty (California requires the CSLB license number in contractor advertising).',
         ]);
     });
 

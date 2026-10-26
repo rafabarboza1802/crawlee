@@ -1,4 +1,6 @@
+import type { ProjectSponsor } from '../discover/sources/sf-pipeline.js';
 import type { Opportunity } from '../discover/types.js';
+import { addLikelyDeveloper, companiesFor } from './identify.js';
 import { type Account, buildAccounts } from '../enrich/accounts.js';
 import type { BuyerRegistry } from '../enrich/buyers.js';
 import type { EnrichConfig } from '../enrich/config.js';
@@ -17,6 +19,8 @@ export interface EvaluateOptions {
     researchCache: FileCache;
     lookupHistory: HistoryLookup;
     suppressed?: Set<string>;
+    /** Public project-sponsor lookup by parcel (SF Development Pipeline); optional. */
+    lookupSponsors?: (parcels: string[]) => Promise<Map<string, ProjectSponsor>>;
     now: Date;
 }
 
@@ -31,6 +35,10 @@ export interface EvaluateResult {
     qualifiedByStatus: Partial<Record<LeadStatus, number>>;
     /** Rejected before qualifying (score, size, inactive, no target scope, homeowner) or after the company check. */
     rejected: number;
+    /** Qualified projects with no GC on the permit where a likely developer was found in public records. */
+    developersIdentified: number;
+    /** Problems that did not stop the run (e.g. the pipeline lookup failed). */
+    warnings: string[];
     buyers: Account[];
     competitors: Account[];
     notPursued: Account[];
@@ -66,14 +74,23 @@ export function rankLeads(leads: LeadRecord[]): LeadRecord[] {
 /** A pursuable lead: qualified project, not rejected or a competitor. */
 export const isActive = (l: LeadRecord) => STATUS_RANK[l.status] !== undefined;
 
+/** Current decision-maker lookup strategy (2: free people search by domain, skip people without email, 2 lookups). */
+export const ENRICHMENT_STRATEGY = 2;
+
 /** Approved buyer whose decision-maker lookup is still to be done (or must be retried). */
-export const needsContact = (company: CompanyRecord | undefined) => !company?.enrichment || company.enrichment.status.startsWith('stopped') || company.enrichment.status === 'error';
+export function needsContact(company: CompanyRecord | undefined): boolean {
+    const e = company?.enrichment;
+    if (!e) return true;
+    if (e.status.startsWith('stopped') || e.status === 'error') return true;
+    // One retry under the current strategy for lookups that found nobody usable; earlier paid lookups are reused from the cache.
+    return (e.strategy ?? 1) < ENRICHMENT_STRATEGY && ['no_verified_email', 'no_people', 'no_org_match'].includes(e.status);
+}
 
 /** Lead status for an approved buyer, from what the (public) database knows about its contact lookup. */
 export function buyerStatus(company: CompanyRecord | undefined): [LeadStatus, string] {
     const e = company?.enrichment;
     if (!e) return ['QUALIFIED', 'Approved buyer: decision-maker lookup pending.'];
-    if (needsContact(company)) return ['QUALIFIED', `Approved buyer: previous lookup did not finish (${e.status}); will be retried.`];
+    if (needsContact(company)) return ['QUALIFIED', `Approved buyer: previous lookup (${e.status}) will be retried with the current lookup strategy.`];
     if (e.status === 'bounced') return ['QUALIFIED', 'Approved buyer: the contact email bounced. Call the company or name a new contact.'];
     if (e.verified_contacts > 0) return ['CONTACT_READY', `Verified decision maker found ${e.at.slice(0, 10)}.`];
     if (e.contact_ids.length > 0) return ['QUALIFIED', `Decision maker found ${e.at.slice(0, 10)}, but no verified business email: call or use LinkedIn.`];
@@ -129,6 +146,28 @@ export async function evaluateOpportunities(opportunities: Opportunity[], option
         }
         rejected++;
         db.setStatus(o.opportunity_id, 'REJECTED', o.score < settings.minScore ? `Score ${o.score} is below ${settings.minScore}.` : problems.join('; '), 'system', now);
+    }
+
+    // IDENTIFY: no GC or business owner on the permit → likely developer from public records (pipeline sponsor, agent).
+    let developersIdentified = 0;
+    const warnings: string[] = [];
+    const needOwner = qualified.filter((o) => !o.businesses.some((b) => b.role === 'contractor' || b.role === 'owner_business'));
+    if (needOwner.length) {
+        let sponsors = new Map<string, ProjectSponsor>();
+        if (options.lookupSponsors) {
+            try {
+                // The pipeline dataset covers San Francisco parcels only.
+                const parcels = needOwner.filter((o) => o.source.id === 'sf-dbi').map((o) => o.location.parcel).filter((p): p is string => !!p);
+                if (parcels.length) sponsors = await options.lookupSponsors(parcels);
+            } catch (error) {
+                warnings.push(`Development Pipeline lookup failed: ${(error as Error).message}`);
+            }
+        }
+        for (const o of needOwner) {
+            if (addLikelyDeveloper(o, sponsors)) developersIdentified++;
+            const lead = db.lead(o.opportunity_id);
+            if (lead) lead.project.companies = companiesFor(o);
+        }
     }
 
     const { accounts, excluded } = buildAccounts(qualified, settings.minScore, options.suppressed);
@@ -198,6 +237,8 @@ export async function evaluateOpportunities(opportunities: Opportunity[], option
         newLeads,
         qualified: qualified.length,
         qualifiedByStatus,
+        developersIdentified,
+        warnings,
         rejected,
         buyers: gate.buyers,
         competitors: gate.blocked,

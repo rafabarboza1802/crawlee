@@ -1,7 +1,8 @@
 import type { Account } from './accounts.js';
 import { accountIdFor, searchNameFor } from './accounts.js';
 import type { BuyerDecision, BuyerRegistry } from './buyers.js';
-import { classifyFromHistory, classifyFromRegistry, competitorRiskSignal } from './buyers.js';
+import { classifyFromHistory, classifyFromRegistry, classifyOwner, competitorRiskSignal } from './buyers.js';
+import { isSinglePurposeEntity } from '../leads/identify.js';
 import type { PermitHistory } from './research.js';
 import type { FileCache } from './store.js';
 
@@ -33,6 +34,11 @@ export async function applyBuyerGate(
 
     for (const account of accounts) {
         let decision: BuyerDecision | undefined = classifyFromRegistry(registry, account.displayName, account.license);
+        if (!decision && account.role === 'owner_business') {
+            const value = Math.max(0, ...account.opportunities.map((o) => o.estimated_value ?? 0));
+            const units = Math.max(0, ...account.opportunities.map((o) => o.proposed_units ?? 0));
+            decision = classifyOwner(account.displayName, competitorRiskSignal(registry, account.displayName), isSinglePurposeEntity(account.displayName), value, units);
+        }
         if (!decision) {
             const riskSignal = competitorRiskSignal(registry, account.displayName);
             if (!account.license) {

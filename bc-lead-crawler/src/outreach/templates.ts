@@ -10,6 +10,10 @@ export interface EmailContext {
     lead: LeadRecord;
     otherLeads: LeadRecord[];
     sender: OutreachConfig['sender'];
+    /** Who the company is for this project: the GC on the permit, or the developer/owner (no GC named yet). */
+    audience?: 'contractor' | 'owner';
+    /** Overrides "Hi <first name>," (e.g. "Hello estimating team," for a published bids mailbox). */
+    greeting?: string;
 }
 
 export interface RenderedEmail {
@@ -23,7 +27,7 @@ const SCOPE_PHRASE: Record<string, string> = {
     'Interior demolition': 'interior demolition',
     Excavation: 'excavation',
     Grading: 'grading',
-    'Sitework/earthwork': 'sitework and earthwork',
+    'Sitework/earthwork': 'sitework',
     'Land clearing': 'land clearing',
     'Concrete flatwork/removal': 'site concrete and concrete removal',
     'Underground/site utilities (drainage)': 'site utilities and drainage',
@@ -45,8 +49,12 @@ const shortProject = (lead: LeadRecord) => firstClause(lead.project.name).replac
 const where = (lead: LeadRecord) => [lead.project.address, lead.project.city].filter(Boolean).join(', ');
 
 function signature(sender: OutreachConfig['sender']): string {
-    return [sender.name, sender.title, sender.company, sender.phone, sender.website.replace(/^https?:\/\//, ''), sender.postalAddress].filter(Boolean).join('\n');
+    const company = sender.licenseNumber ? `${sender.company} · CA License #${sender.licenseNumber}` : sender.company;
+    return [sender.name, sender.title, company, sender.phone, sender.website.replace(/^https?:\/\//, ''), sender.postalAddress].filter(Boolean).join('\n');
 }
+
+/** The services Best Construction offers, for one factual line about who we are. */
+const WHAT_WE_DO = 'demolition, excavation, grading, sitework, concrete, paving and hardscape, and hauling';
 
 export const OPT_OUT_LINE = 'If you would rather not hear from us, reply "unsubscribe" and we will not email you again.';
 
@@ -57,18 +65,30 @@ export const OPT_OUT_LINE = 'If you would rather not hear from us, reply "unsubs
 export function renderEmail(step: number, ctx: EmailContext): RenderedEmail {
     const { lead } = ctx;
     const scopes = scopePhrase(lead);
-    const hi = `Hi ${ctx.firstName},`;
-    const subject = `${scopes.charAt(0).toUpperCase()}${scopes.slice(1)} for ${lead.project.address ?? 'your project'}`;
+    const hi = ctx.greeting ?? `Hi ${ctx.firstName},`;
+    const subject = `${scopes.charAt(0).toUpperCase()}${scopes.slice(1)} bid for ${lead.project.address ?? 'your project'}`;
     const permitContractor = lead.project.permit_contractor ?? ctx.company;
     const footer = `\n\n${signature(ctx.sender)}\n\n${OPT_OUT_LINE}\n`;
 
     if (step === 1) {
         const also = ctx.otherLeads[0] ? ` We would be glad to look at ${where(ctx.otherLeads[0])} as well.` : '';
+        const intro = `I'm reaching out from ${ctx.sender.company}, a California subcontractor for ${WHAT_WE_DO}.`;
+        if (ctx.audience === 'owner') {
+            return {
+                subject,
+                text:
+                    `${hi}\n\n` +
+                    `${intro} Public records list ${ctx.company} on the ${shortProject(lead)} at ${where(lead)}.\n\n` +
+                    `We would like to bid the ${scopes} for this project. If a general contractor is already running the bids, could you point us to them? If not, we would be glad to be on the bidder list for the site packages.${also}\n\n` +
+                    `Thank you for considering us.` +
+                    footer,
+            };
+        }
         return {
             subject,
             text:
                 `${hi}\n\n` +
-                `I'm reaching out from ${ctx.sender.company}, a California contractor. Public permit records list ${permitContractor} as the contractor on the ${shortProject(lead)} at ${where(lead)}.\n\n` +
+                `${intro} Public permit records list ${permitContractor} as the contractor on the ${shortProject(lead)} at ${where(lead)}.\n\n` +
                 `We would like to bid the ${scopes} on this project. Could you add us to your bidder list for those packages, or send the bid invitation and plans when they are ready?${also}\n\n` +
                 `If someone else at ${ctx.company} handles these bids, I would appreciate a pointer to the right person.` +
                 footer,
@@ -79,7 +99,7 @@ export function renderEmail(step: number, ctx: EmailContext): RenderedEmail {
             subject: `Re: ${subject}`,
             text:
                 `${hi}\n\n` +
-                `Following up on my note about the ${scopes} at ${where(lead)}. If bid packages for that work are going out, we would like to be on the list, and we are happy to review plans and specifications.` +
+                `Following up on my note about the ${scopes} at ${where(lead)}. If bid packages for that work are going out, we would like to be on the list. Send plans and specifications when convenient and we will return a line-item price.` +
                 footer,
         };
     }

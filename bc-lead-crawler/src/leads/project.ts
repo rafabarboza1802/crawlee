@@ -1,7 +1,8 @@
-import { SERVICE_POINTS } from '../discover/services.js';
+import { CORE_SCOPES, SERVICE_POINTS } from '../discover/services.js';
 import type { Opportunity, Service } from '../discover/types.js';
 import type { LeadProject } from './types.js';
 import type { LeadSettings } from './settings.js';
+import { companiesFor } from './identify.js';
 
 /** Best Construction's target scopes, as matched from public permit descriptions. Remodel/ADU work is not a scope. */
 const TARGET_SCOPE: Partial<Record<Service, string>> = {
@@ -19,9 +20,11 @@ const TARGET_SCOPE: Partial<Record<Service, string>> = {
     pavers_hardscape: 'Pavers/hardscape',
 };
 
+const rank = (s: Service) => (CORE_SCOPES.includes(s) ? CORE_SCOPES.indexOf(s) : 99);
+
 export function targetScopes(o: Opportunity): string[] {
     return [...o.services]
-        .sort((a, b) => SERVICE_POINTS[b.service] - SERVICE_POINTS[a.service])
+        .sort((a, b) => SERVICE_POINTS[b.service] - SERVICE_POINTS[a.service] || rank(a.service) - rank(b.service))
         .map((s) => TARGET_SCOPE[s.service])
         .filter((s): s is string => !!s)
         .filter((s, i, all) => all.indexOf(s) === i);
@@ -124,6 +127,7 @@ export function describeProject(o: Opportunity, now: Date, settings: LeadSetting
         permit_contractor: contractor?.name ?? null,
         // Owners that are businesses; otherwise the permit agent, which is often the developer (or an expediter).
         developer_owner: owner?.name ?? (agent ? `${agent.name} (permit agent)` : null),
+        companies: companiesFor(o),
         evidence_url: o.source.record_url,
         source_name: o.source.name,
         target_scopes: scopes,

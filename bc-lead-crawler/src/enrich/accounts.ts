@@ -34,11 +34,27 @@ export function cleanCompanyName(name: string): string {
     return name.replace(/\*[^*]*\*/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
+/** Trailing words that are not part of how a company is listed in business databases. */
+const TRAILING_NOISE = /[,\s]+(?:jv|j\.v\.|joint venture|(?:of\s+)?(?:northern\s+)?california|(?:of\s+)?ca|bay area|sf)\.?$/i;
+const ABBREVIATIONS: [RegExp, string][] = [
+    [/\bconstr?\.?(?=\s|$)/gi, 'Construction'],
+    [/\bbros\.?(?=\s|$)/gi, 'Brothers'],
+    [/\bgen\.?\s+contr(?:actors?)?\.?(?=\s|$)/gi, 'General Contractors'],
+    [/\bdev\.?(?=\s|$)/gi, 'Development'],
+    [/\bsvcs?\.?(?=\s|$)/gi, 'Services'],
+];
+
 export function searchNameFor(name: string): string {
-    let n = cleanCompanyName(name);
-    if (name.trim().length >= DATASF_NAME_LIMIT && n.includes(' ')) n = n.slice(0, n.lastIndexOf(' '));
-    while (LEGAL_SUFFIX.test(n)) n = n.replace(LEGAL_SUFFIX, '');
-    return n.trim();
+    // Mailing prefixes kept in permit records ("c/o Crescent Heights", "Attn: ...") are not part of the name.
+    let n = cleanCompanyName(name).replace(/^(?:c\/o|attn:?)\s+/i, '');
+    const truncated = name.trim().length >= DATASF_NAME_LIMIT;
+    // "Legal Name Inc / dba Trade Name": the trade name is what the company is known by, unless it was cut off.
+    const dba = /^(.*?)[\s/,]+d\.?b\.?a\.?\s+(.+)$/i.exec(n);
+    if (dba) n = truncated ? dba[1]! : dba[2]!;
+    else if (truncated && n.includes(' ')) n = n.slice(0, n.lastIndexOf(' '));
+    for (let i = 0; i < 3; i++) n = n.replace(LEGAL_SUFFIX, '').replace(TRAILING_NOISE, '');
+    for (const [re, full] of ABBREVIATIONS) n = n.replace(re, full);
+    return n.replace(/\s+/g, ' ').trim();
 }
 
 export function accountIdFor(name: string): string {

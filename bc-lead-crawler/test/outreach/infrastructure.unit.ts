@@ -205,6 +205,9 @@ describe('owner updates and weekly report', () => {
             needsReview: 4,
             competitorsBlocked: 2,
             contactsDiscovered: 1,
+            verifiedEmails: 1,
+            companiesIdentified: 3,
+            notEnriched: ['Example GC: no verified email'],
             apolloCredits: 2,
             apolloCreditsMonth: 2,
             apolloCostUsd: null,
@@ -221,7 +224,7 @@ describe('owner updates and weekly report', () => {
             notes: [],
         };
         const md = weeklyMarkdown(m, d);
-        for (const label of ['Projects scanned', 'New opportunities', 'Qualified leads', 'Rejected opportunities', 'Leads requiring review', 'Competitors blocked', 'Contacts discovered', 'Apollo credits used', 'Estimated Apollo cost', 'Emails sent', 'Follow-ups sent', 'Replies', 'Bounces', 'Opt-outs', 'Bid invitations', 'Top opportunities']) {
+        for (const label of ['Projects scanned', 'New opportunities', 'Qualified leads', 'Rejected opportunities', 'Leads requiring review', 'Competitors blocked', 'Companies identified', 'Contacts discovered', 'Verified business emails', 'Contacts that could not be enriched', 'Apollo credits used', 'Estimated Apollo cost', 'Emails sent', 'Follow-ups sent', 'Replies', 'Bounces', 'Opt-outs', 'Bid invitations', 'Top opportunities']) {
             expect(md).toContain(label);
         }
         expect(md).toMatch(/❌ Broken county: FAILED — HTTP 503/);
@@ -232,6 +235,7 @@ describe('owner updates and weekly report', () => {
         const history = (await readFile(join(dir, 'weekly-history.csv'), 'utf8')).trim().split('\n');
         expect(history).toHaveLength(3);
         expect(history[2]).toMatch(/^2026-11-02,1,1,3400,50,16,/);
+        expect(history[0]).toContain('companies_identified,contacts_discovered,verified_emails');
         expect(await readFile(join(dir, 'weekly', '2026-10-26.md'), 'utf8')).toBe(md);
     });
 });
