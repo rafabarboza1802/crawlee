@@ -147,9 +147,10 @@ describe('LinkedIn: compliant use only', () => {
 
 describe('plan and estimate', () => {
     const account = buildAccounts([opp(93, [{ name: 'Nolan Construction Inc' }])], 70).accounts[0]!;
+    const one = EnrichConfigSchema.parse({ maxEnrichedPerAccount: 1 });
 
     test('per company: organization search, free people search, then the primary contact only', () => {
-        const plan = planAccount(account, config, noCache);
+        const plan = planAccount(account, one, noCache);
         expect(plan.calls.map((c) => [c.step, c.endpoint.split('/v1/')[1], c.credits])).toEqual([
             [1, 'mixed_companies/search', 1],
             [2, 'mixed_people/api_search', 0],
@@ -168,8 +169,22 @@ describe('plan and estimate', () => {
         expect(cached.creditsExpected).toBe(1);
     });
 
+    test('known company domain (registry): no paid organization search, people searched by domain; default 2 email lookups', () => {
+        const withDomain = { ...account, buyer: { classification: 'buyer' as const, reason: 'r', evidence: [], source: 'registry' as const, website: 'https://www.nolan.example/about' } };
+        const plan = planAccount(withDomain, config, noCache);
+        expect(plan.calls.map((c) => [c.step, c.credits])).toEqual([
+            [1, 0],
+            [2, 0],
+            [3, 1],
+            [3, 1],
+        ]);
+        expect(plan.calls[0]!.condition).toMatch(/^Skipped: company domain nolan\.example is known/);
+        expect(plan.calls[1]!.body).toMatchObject({ q_organization_domains_list: ['nolan.example'] });
+        expect([plan.creditsExpected, plan.creditsMax]).toEqual([1, 2]);
+    });
+
     test('budget: within cap, USD when the price per credit is known, refused when over', () => {
-        const plans = [planAccount(account, config, noCache)];
+        const plans = [planAccount(account, one, noCache)];
         expect(estimate(plans, config, NOW)).toMatchObject({ creditsExpected: 2, creditsMax: 2, usdExpected: null, withinBudget: true });
         const priced = EnrichConfigSchema.parse({ usdPerCredit: 0.02 });
         expect(estimate(plans, priced, NOW)).toMatchObject({ usdExpected: 0.04, monthlyCreditCap: 500 });
@@ -177,10 +192,10 @@ describe('plan and estimate', () => {
     });
 
     test('the plan id changes whenever what would be sent or paid changes', () => {
-        const a = estimate([planAccount(account, config, noCache)], config, NOW).planId;
+        const a = estimate([planAccount(account, one, noCache)], config, NOW).planId;
         const b = estimate([planAccount(account, EnrichConfigSchema.parse({ maxEnrichedPerAccount: 2 }), noCache)], config, NOW).planId;
         expect(a).not.toBe(b);
-        expect(estimate([planAccount(account, config, noCache)], config, NOW).planId).toBe(a);
+        expect(estimate([planAccount(account, one, noCache)], config, NOW).planId).toBe(a);
     });
 
     test('contact plan rows: requested fields, person data pending, manual LinkedIn link, reason and pitch', () => {
@@ -239,7 +254,7 @@ describe('CLI', () => {
         expect(stdout).toMatch(/why: Large GC that bids sitework out/);
         expect(stdout).toMatch(/BLOCKED[^]*Bay Cities Paving/);
         expect(stdout).toMatch(/MANUAL REVIEW[^]*Unknown Builders/);
-        expect(stdout).toMatch(/credits: 2 expected, 2 maximum/);
+        expect(stdout).toMatch(/credits: 2 expected, 3 maximum/);
         expect(stdout).toMatch(/npm run enrich -- --approve [0-9a-f]{12}/);
         const files = await readdir(dir);
         expect(files.some((f) => f.startsWith('contact-plan-') && f.endsWith('.csv'))).toBe(true);

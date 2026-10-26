@@ -70,7 +70,7 @@ describe('daily commands', () => {
         const found = await cli(['find', '--input', input, ...common]);
         expect(found.stdout).toMatch(/Qualified projects \(score ≥ 70, verified real, current and in scope\): 2\n {2}QUALIFIED: 1 · NEEDS_REVIEW: 1/);
         expect(found.stdout).toMatch(/Best opportunities with an approved buyer\n {1,3}95 {2}New 120-unit building/);
-        expect(found.stdout).toMatch(/Exact credits for this batch: 2 expected, 2 maximum/);
+        expect(found.stdout).toMatch(/Exact credits for this batch: 1 expected, 2 maximum/);
         expect(found.stdout).toMatch(/No Apollo credits were used/);
         const reports = await readdir(join(dir, 'data', 'reports'));
         for (const f of ['qualified-opportunities.csv', 'approved-buyers.csv', 'contacts-awaiting-enrichment.csv', 'rejected-competitors.csv', 'manual-review.csv', 'apollo-ledger.csv', 'summary.md']) {
@@ -80,7 +80,7 @@ describe('daily commands', () => {
 
         const estimate = await cli(['contacts', ...common]);
         expect(estimate.stdout).toMatch(/ESTIMATE ONLY. No Apollo calls were made/);
-        expect(estimate.stdout).toMatch(/EXACT CREDITS: 2 expected, 2 maximum/);
+        expect(estimate.stdout).toMatch(/EXACT CREDITS: 1 expected, 2 maximum/);
         const planId = /--approve ([0-9a-f]{12})/.exec(estimate.stdout)![1];
         await expect(cli(['contacts', '--approve', '000000000000', ...common])).rejects.toMatchObject({ stderr: expect.stringMatching(/batch changed/) });
         expect(planId).toMatch(/^[0-9a-f]{12}$/);

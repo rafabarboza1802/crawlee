@@ -19,6 +19,9 @@ export interface WeeklyMetrics {
     needsReview: number;
     competitorsBlocked: number;
     contactsDiscovered: number;
+    verifiedEmails: number;
+    companiesIdentified: number;
+    notEnriched: string[];
     apolloCredits: number;
     apolloCreditsMonth: number;
     apolloCostUsd: number | null;
@@ -45,7 +48,9 @@ export const HISTORY_COLUMNS: [string, (m: WeeklyMetrics) => string | number][] 
     ['rejected', (m) => m.rejected],
     ['needs_review', (m) => m.needsReview],
     ['competitors_blocked', (m) => m.competitorsBlocked],
+    ['companies_identified', (m) => m.companiesIdentified],
     ['contacts_discovered', (m) => m.contactsDiscovered],
+    ['verified_emails', (m) => m.verifiedEmails],
     ['apollo_credits', (m) => m.apolloCredits],
     ['apollo_cost_usd', (m) => (m.apolloCostUsd === null ? '' : m.apolloCostUsd)],
     ['email_mode', (m) => m.emailMode],
@@ -82,7 +87,9 @@ export function weeklyMarkdown(m: WeeklyMetrics, db: LeadDatabase, top = 10): st
         `| Rejected opportunities | ${m.rejected} |`,
         `| Leads requiring review | ${m.needsReview} |`,
         `| Competitors blocked | ${m.competitorsBlocked} |`,
-        `| Contacts discovered | ${m.contactsDiscovered} |`,
+        `| Companies identified (GC / developer / owner) | ${m.companiesIdentified} |`,
+        `| Contacts discovered (decision makers) | ${m.contactsDiscovered} |`,
+        `| Verified business emails | ${m.verifiedEmails} |`,
         `| Apollo credits used | ${m.apolloCredits} (month: ${m.apolloCreditsMonth}) |`,
         `| Estimated Apollo cost | ${m.apolloCostUsd === null ? 'unknown (set usdPerCredit in enrich.config.json)' : `$${m.apolloCostUsd.toFixed(2)}`} |`,
         `| Email mode | ${m.emailMode.toUpperCase()} |`,
@@ -103,6 +110,7 @@ export function weeklyMarkdown(m: WeeklyMetrics, db: LeadDatabase, top = 10): st
             `- **${p.score}** ${p.name} — ${money(p.estimated_value) || 'value n/a'}, ${p.city} (${p.county} County). GC: ${p.general_contractor ?? 'not named yet'}. Scope: ${p.target_scopes.join(', ')}. **${l.status}**: ${l.status_reason} [source](${p.evidence_url})`,
         );
     }
+    if (m.notEnriched.length) lines.push('', '## Contacts that could not be enriched', ...m.notEnriched.map((n) => `- ${n}`));
     lines.push('', '## Errors and source failures', ...(m.errors.length ? m.errors.map((e) => `- ${e}`) : ['- None']));
     if (m.notes.length) lines.push('', '## Notes', ...m.notes.map((n) => `- ${n}`));
     lines.push('', 'Contact names and email addresses are not in this public report; they are in the private owner email and the encrypted data vault.');

@@ -80,6 +80,8 @@ export const LeadProjectSchema = z.object({
     /** Contractor name exactly as on the permit (differs from general_contractor when a JV resolves to its managing GC). */
     permit_contractor: z.string().nullable(),
     developer_owner: z.string().nullable(),
+    /** Every business identified for the project (GC, developer/owner, applicant, architect, engineer) and where from. */
+    companies: z.array(z.object({ role: z.string(), name: z.string(), source: z.string() })).default([]),
     evidence_url: z.string(),
     source_name: z.string(),
     target_scopes: z.array(z.string()),
@@ -147,6 +149,10 @@ export const CompanyRecordSchema = z.object({
             /** Apollo person ids only; names and emails live in the private contact store. */
             contact_ids: z.array(z.string()),
             verified_contacts: z.number(),
+            /** Decision makers identified (with or without a verified email). */
+            people_found: z.number().optional(),
+            /** Lookup strategy version; older lookups that found no usable email get one retry with the current one. */
+            strategy: z.number().optional(),
             company_website: z.string().optional(),
             company_phone: z.string().optional(),
             note: z.string().optional(),

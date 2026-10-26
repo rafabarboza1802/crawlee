@@ -32,7 +32,8 @@ async function serve(handler: (path: string, body: string) => [number, unknown])
 }
 
 const FROM = 'outreach@bestconstruction.example';
-const PROSPECT = 'sam@cahill.example';
+// Fictional person on Cahill's registry domain (contact verification requires the company's own domain).
+const PROSPECT = 'sam.estimator@cahill-sf.com';
 
 async function fakes() {
     const apollo = await serve((path) => {
@@ -83,11 +84,14 @@ describe('weekly run (cloud job) end to end — fake Apollo and fake Gmail, no r
         const first = await weekly();
         expect(first.stdout).toMatch(/\| Qualified leads \| 3 \|/);
         expect(first.stdout).toMatch(/\| Competitors blocked \| 1 \|/);
-        expect(first.stdout).toMatch(/\| Contacts discovered \| 1 \|/);
-        expect(first.stdout).toMatch(/\| Apollo credits used \| 2 \(month: 2\) \|/);
+        expect(first.stdout).toMatch(/\| Contacts discovered \(decision makers\) \| 1 \|/);
+        expect(first.stdout).toMatch(/\| Verified business emails \| 1 \|/);
+        expect(first.stdout).toMatch(/\| Apollo credits used \| 1 \(month: 1\) \|/);
         expect(first.stdout).toMatch(/\| Email mode \| TEST \|/);
         expect(first.stdout).toMatch(/\| Test emails \(to your test address\) \| 1 \|/);
-        expect(apollo.calls.map((c) => c.path.split('/').slice(-2).join('/'))).toEqual(['mixed_companies/search', 'mixed_people/api_search', 'people/match']);
+        // Cahill's domain is in the buyer registry: no paid organization search, free people search by domain.
+        expect(apollo.calls.map((c) => c.path.split('/').slice(-2).join('/'))).toEqual(['mixed_people/api_search', 'people/match']);
+        expect(JSON.parse(apollo.calls[0]!.body)).toMatchObject({ q_organization_domains_list: ['cahill-sf.com'] });
 
         // Only the test address and the owner received anything; the prospect never did.
         const sends = gmail.calls.filter((c) => c.path === '/api/messages/send').map((c) => Buffer.from((JSON.parse(c.body) as { raw: string }).raw.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
@@ -108,7 +112,7 @@ describe('weekly run (cloud job) end to end — fake Apollo and fake Gmail, no r
 
         // Second run: contact already bought and cached → no Apollo call; still test mode.
         await weekly();
-        expect(apollo.calls).toHaveLength(3);
+        expect(apollo.calls).toHaveLength(2);
     });
 
     test('credit control: nothing is bought if a company does not fit in the per-run credit limit; missing key means no spend at all', async () => {

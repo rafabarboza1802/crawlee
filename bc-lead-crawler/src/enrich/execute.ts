@@ -1,6 +1,6 @@
 import type { Account } from './accounts.js';
 import type { ApolloClient, ApolloOrg, ApolloPerson } from './apollo.js';
-import { ApolloAuthError, isVerifiedBusinessEmail, nameSimilarity, parseMatchedPerson, parseOrganizations, parsePeople } from './apollo.js';
+import { ApolloAuthError, domainFromUrl, isVerifiedBusinessEmail, nameSimilarity, parseMatchedPerson, parseOrganizations, parsePeople } from './apollo.js';
 import type { EnrichConfig } from './config.js';
 import type { AccountPlan } from './plan.js';
 import { roleTargets, targetTitles } from './roles.js';
@@ -34,7 +34,8 @@ export interface ExecuteOptions {
 export function rankPeople(people: ApolloPerson[], account: Account, max: number): RankedPerson[] {
     const targets = roleTargets(account.kind);
     const ranked: RankedPerson[] = [];
-    for (const p of people) {
+    // Apollo's free search says when it holds no email for someone: never pay to look those people up.
+    for (const p of people.filter((x) => x.hasEmail !== false)) {
         const title = (p.title ?? '').toLowerCase();
         const idx = targets.findIndex((t) => t.titles.some((x) => title.includes(x.toLowerCase())));
         if (idx < 0) continue;
@@ -94,9 +95,11 @@ export async function executePlans(
         const before = spent;
         const result: AccountResult = { accountId: account.accountId, status: 'error', backups: [], creditsSpent: 0 };
         try {
-            // 1. Organization.
+            // 1. Organization. When the company's web domain is already known (registry), the paid organization
+            //    search is skipped and people are searched by domain, which is free.
+            const knownDomain = domainFromUrl(account.buyer?.website);
             const orgKey = `apollo:org-search:${account.accountId}`;
-            let orgs = cache.get<ApolloOrg[]>(orgKey);
+            let orgs = knownDomain ? [{ id: '', name: account.buyer?.resolvedName ?? account.displayName, domain: knownDomain, website: account.buyer?.website }] : cache.get<ApolloOrg[]>(orgKey);
             if (!orgs) {
                 const json = await paidCall(account, 'mixed_companies/search', config.apolloCredits.organizationSearch, {
                     q_organization_name: account.searchName,
@@ -111,10 +114,12 @@ export async function executePlans(
                 orgs = parseOrganizations(json);
                 await cache.set(orgKey, orgs, options.now);
             }
-            const best = orgs
-                .filter(inCalifornia)
-                .map((o) => ({ ...o, matchScore: Math.round(nameSimilarity(account.searchName, o.name) * 100) / 100 }))
-                .sort((a, b) => b.matchScore - a.matchScore)[0];
+            const best = knownDomain
+                ? { ...orgs[0]!, matchScore: 1 }
+                : orgs
+                      .filter(inCalifornia)
+                      .map((o) => ({ ...o, matchScore: Math.round(nameSimilarity(account.searchName, o.name) * 100) / 100 }))
+                      .sort((a, b) => b.matchScore - a.matchScore)[0];
             if (!best || best.matchScore < config.minOrgMatch) {
                 results.push({ ...result, status: 'no_org_match', creditsSpent: spent - before, note: best ? `Best Apollo match "${best.name}" scored ${best.matchScore}` : 'No California company found' });
                 continue;
@@ -122,14 +127,14 @@ export async function executePlans(
             result.org = best;
 
             // 2. People (free per Apollo's pricing page; still cached).
-            const peopleKey = `apollo:people-search:${account.accountId}:${account.kind}`;
+            const peopleKey = `apollo:people-search:v2:${account.accountId}:${account.kind}`;
             let people = cache.get<ApolloPerson[]>(peopleKey);
             if (!people) {
                 const json = await paidCall(account, 'mixed_people/api_search', config.apolloCredits.peopleSearch, {
-                    organization_ids: [best.id],
+                    ...(best.domain && (knownDomain || !best.id) ? { q_organization_domains_list: [best.domain] } : { organization_ids: [best.id] }),
                     person_titles: targetTitles(account.kind),
                     page: 1,
-                    per_page: 10,
+                    per_page: 25,
                 });
                 if (!json) {
                     results.push({ ...result, status: 'stopped_budget', creditsSpent: spent - before, note: 'Budget limit reached' });
@@ -144,12 +149,16 @@ export async function executePlans(
                 continue;
             }
 
-            // 3. Business email for the primary contact (then backups, up to the configured number).
+            // 3. Business email, best-ranked person first. People already looked up are reused from the cache for free;
+            //    at most maxEnrichedPerAccount new (paid) lookups per company per run.
             let enriched: RankedPerson | undefined;
-            for (const candidate of ranked.slice(0, config.maxEnrichedPerAccount)) {
+            let paidLookups = 0;
+            for (const candidate of ranked) {
                 const personKey = `apollo:person:${candidate.id}`;
                 let person = cache.get<ApolloPerson | null>(personKey);
                 if (person === undefined) {
+                    if (paidLookups >= config.maxEnrichedPerAccount) break;
+                    paidLookups++;
                     const json = await paidCall(account, 'people/match', config.apolloCredits.peopleMatch, {
                         id: candidate.id,
                         reveal_personal_emails: false,

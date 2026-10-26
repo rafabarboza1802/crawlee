@@ -1,4 +1,4 @@
-import { SERVICE_LABELS, SERVICE_POINTS } from './services.js';
+import { CORE_SCOPES, SERVICE_LABELS, SERVICE_POINTS } from './services.js';
 import type { Business, NormalizedPermit, Opportunity, ScoreFactor, Service } from './types.js';
 
 export interface ScoreInput {
@@ -44,10 +44,11 @@ export function scoreOpportunity(input: ScoreInput): ScoreResult {
     const { permit, services, businesses, now } = input;
     const factors: ScoreFactor[] = [];
 
-    // Service fit (max 40): best service tier + 2 per extra service (max +5).
+    // Service fit (max 40): best service tier + 3 per extra core site scope (max +6).
     const ranked = [...services].sort((a, b) => SERVICE_POINTS[b] - SERVICE_POINTS[a]);
     const best = ranked[0];
-    const fit = best ? Math.min(40, SERVICE_POINTS[best] + Math.min(5, 2 * (ranked.length - 1))) : 0;
+    const extraCore = ranked.slice(1).filter((s) => CORE_SCOPES.includes(s)).length;
+    const fit = best ? Math.min(40, SERVICE_POINTS[best] + Math.min(6, 3 * extraCore)) : 0;
     factors.push({
         factor: 'service_fit',
         points: fit,

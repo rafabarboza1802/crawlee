@@ -22,10 +22,12 @@ export const OutreachConfigSchema = z.object({
             company: z.string().default('Best Construction Inc.'),
             website: z.string().default('https://bestconstruction.pro'),
             phone: z.string().default(''),
+            /** CSLB contractor license number, shown in the signature (California requires it in contractor advertising). */
+            licenseNumber: z.string().default(''),
             /** Physical mailing address: required by CAN-SPAM in every commercial email. */
             postalAddress: z.string().default(''),
         })
-        .default({ name: '', title: '', company: 'Best Construction Inc.', website: 'https://bestconstruction.pro', phone: '', postalAddress: '' }),
+        .default({ name: '', title: '', company: 'Best Construction Inc.', website: 'https://bestconstruction.pro', phone: '', licenseNumber: '', postalAddress: '' }),
     limits: z
         .object({
             /** New prospects started per weekly run (start small; raise slowly). */
@@ -101,6 +103,7 @@ export function readinessProblems(config: OutreachConfig, env: OutreachEnv, mode
         if (!testPassedAt) problems.push('No successful test run yet: run in test mode first.');
         if (!config.sender.name) problems.push('sender.name is empty in outreach.config.json.');
         if (!config.sender.postalAddress) problems.push('sender.postalAddress is empty (a physical mailing address is legally required).');
+        if (!config.sender.licenseNumber) problems.push('sender.licenseNumber is empty (California requires the CSLB license number in contractor advertising).');
     }
     return problems;
 }

@@ -140,23 +140,27 @@ export function matchServices(permit: Pick<NormalizedPermit, 'description' | 'pe
 }
 
 /** Score tier of each service (points for the service-fit factor). */
+/** Best Construction's core site scopes (owner, 2026-10-26) earn the most; interior, ADU and remodel work the least. */
 export const SERVICE_POINTS: Record<Service, number> = {
     demolition: 35,
-    interior_demolition: 18,
     excavation: 35,
     grading: 35,
-    retaining_walls: 35,
-    site_work: 33,
-    drainage: 33,
+    site_work: 35,
+    pavers_hardscape: 34,
+    paving: 34,
+    concrete: 33,
     land_clearing: 33,
-    pavers_hardscape: 32,
-    paving: 32,
-    concrete: 30,
-    adu: 28,
+    retaining_walls: 32,
+    drainage: 32,
+    hauling_debris: 28,
     general_construction: 22,
-    remodel: 15,
-    hauling_debris: 10,
+    interior_demolition: 15,
+    adu: 12,
+    remodel: 10,
 };
+
+/** Core site scopes: each extra one on the same project adds to the fit score. */
+export const CORE_SCOPES: Service[] = ['demolition', 'excavation', 'grading', 'site_work', 'pavers_hardscape', 'paving', 'concrete', 'land_clearing', 'retaining_walls', 'drainage', 'hauling_debris'];
 
 export const SERVICE_LABELS: Record<Service, string> = {
     demolition: 'demolition',

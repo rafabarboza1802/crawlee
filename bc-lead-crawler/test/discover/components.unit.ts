@@ -123,9 +123,9 @@ describe('scoreOpportunity', () => {
             permit: permit({ estimatedCost: 1.5e6, filedDate: '2026-10-10' }),
             services: ['demolition', 'hauling_debris'],
         });
-        expect(r.score).toBe(37 + 17 + 15 + 15 + 10);
+        expect(r.score).toBe(38 + 17 + 15 + 15 + 10);
         expect(r.band).toBe('high');
-        expect(r.summary).toMatch(/^94\/100 \(high\): matches demolition, hauling\/debris removal/);
+        expect(r.summary).toMatch(/^95\/100 \(high\): matches demolition, hauling\/debris removal/);
     });
 
     test('older, smaller remodel scores low; inactive permits are capped at 10', () => {

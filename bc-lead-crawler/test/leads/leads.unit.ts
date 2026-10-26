@@ -155,9 +155,13 @@ describe('lead pipeline: verify → score → classify → buyer gate', () => {
         ]);
         const batch = await planContactBatch(s.db, registry, settings, config, s.apolloCache, s.researchCache, NOW);
         expect(batch.plans.map((p) => p.account.accountId)).toEqual(['cahill-contractors', 'nibbi-brothers']);
-        expect(batch.estimate).toMatchObject({ creditsExpected: 4, creditsMax: 4 });
+        expect(batch.estimate).toMatchObject({ creditsExpected: 4, creditsMax: 6 });
 
+        // A lookup under the previous strategy that found no usable email gets exactly one retry...
         s.db.setEnrichment('nibbi-brothers', { status: 'no_people', at: NOW.toISOString(), plan_id: 'x', credits: 1, contact_ids: [], verified_contacts: 0 });
+        expect((await planContactBatch(s.db, registry, settings, config, s.apolloCache, s.researchCache, NOW)).plans.map((p) => p.account.accountId)).toContain('nibbi-brothers');
+        // ...and once the current strategy has run, never again.
+        s.db.setEnrichment('nibbi-brothers', { status: 'no_people', at: NOW.toISOString(), plan_id: 'x', credits: 1, contact_ids: [], verified_contacts: 0, strategy: 2 });
         const next = await planContactBatch(s.db, registry, settings, config, s.apolloCache, s.researchCache, NOW);
         expect(next.plans.map((p) => p.account.accountId)).toEqual(['cahill-contractors']);
         expect(next.alreadyEnriched).toEqual(['Nibbi Brothers']);

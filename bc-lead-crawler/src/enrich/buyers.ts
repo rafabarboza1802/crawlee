@@ -62,7 +62,7 @@ export interface BuyerDecision {
     classification: BuyerClass;
     reason: string;
     evidence: string[];
-    source: 'registry' | 'joint_venture' | 'permit_research';
+    source: 'registry' | 'joint_venture' | 'permit_research' | 'owner_rule';
     /** Company to enrich instead of the permit name (registry canonical name or a JV's managing GC). */
     resolvedName?: string;
     /** Original JV name when the decision was resolved through a joint venture. */
@@ -147,6 +147,30 @@ export function classifyFromRegistry(registry: BuyerRegistry, name: string, lice
 
     const company = findCompany(registry, name, license);
     return company ? fromCompany(company, 'registry') : undefined;
+}
+
+/** Owner-side rule thresholds: a named developer/owner of a project at least this large is a buyer. */
+export const OWNER_RULE = { minProjectValue: 1_000_000, minUnits: 10 } as const;
+
+/**
+ * Developers and business owners hire the GC and buy site work; they are not competitors. A named owner-side business
+ * on a large qualified project is a buyer, unless its name carries a competitor-risk word (then it is researched like a
+ * contractor) or it is a single-purpose project LLC (the developer behind it is unknown).
+ */
+export function classifyOwner(name: string, riskSignal: string | undefined, singlePurpose: boolean, projectValue: number, units: number): BuyerDecision | undefined {
+    if (riskSignal) return undefined;
+    if (singlePurpose) {
+        return { classification: 'uncertain', reason: `Single-purpose project LLC: identify the developer behind ${name} before contacting.`, evidence: [], source: 'owner_rule' };
+    }
+    const large = projectValue >= OWNER_RULE.minProjectValue || units >= OWNER_RULE.minUnits;
+    return large
+        ? {
+              classification: 'buyer',
+              reason: `Developer/owner named in public records on a ${projectValue >= 1e6 ? `$${(projectValue / 1e6).toFixed(1)}M` : `${units}-unit`} project: owners hire the GC and buy site work, and are not competitors.`,
+              evidence: ['Named as owner/sponsor/applicant in DataSF permit or pipeline records'],
+              source: 'owner_rule',
+          }
+        : { classification: 'uncertain', reason: `Owner-side business on a small project: manual review.`, evidence: [], source: 'owner_rule' };
 }
 
 /** Thresholds for permit-history research. */

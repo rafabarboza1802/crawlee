@@ -3,7 +3,7 @@ import { isVerifiedBusinessEmail, type ApolloOrg } from '../enrich/apollo.js';
 import type { AccountResult, RankedPerson } from '../enrich/execute.js';
 import type { AccountPlan } from '../enrich/plan.js';
 import type { ContactStore, LeadDatabase } from './db.js';
-import { buyerStatus } from './pipeline.js';
+import { buyerStatus, ENRICHMENT_STRATEGY } from './pipeline.js';
 import type { ContactRecord } from './types.js';
 
 const domainOf = (value?: string) =>
@@ -65,6 +65,8 @@ export function recordEnrichment(results: AccountResult[], plans: AccountPlan[],
             credits: r.creditsSpent,
             contact_ids: records.map((c) => c.id),
             verified_contacts: records.filter((c) => c.verified).length,
+            people_found: records.length,
+            strategy: ENRICHMENT_STRATEGY,
             ...(r.org?.website ? { company_website: r.org.website } : {}),
             ...(r.org?.phone ? { company_phone: r.org.phone } : {}),
             ...(r.note ? { note: r.note } : {}),

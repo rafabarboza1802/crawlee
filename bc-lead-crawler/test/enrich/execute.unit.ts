@@ -139,6 +139,31 @@ describe('approved run against a fake Apollo server', () => {
         expect(second[0]).toMatchObject({ status: 'enriched', creditsSpent: 0 });
     });
 
+    test('never pays for people Apollo holds no email for; tries the next person; earlier lookups are reused for free', async () => {
+        const people = {
+            people: [
+                { id: 'p-noemail', first_name: 'A', title: 'Chief Estimator', has_email: false },
+                { id: 'p-unverified', first_name: 'B', title: 'Senior Estimator', has_email: true },
+                { id: 'p-good', first_name: 'C', title: 'Estimator', has_email: true },
+            ],
+        };
+        const match = (body: Record<string, unknown>): [number, unknown] =>
+            body.id === 'p-unverified'
+                ? [200, { person: { id: 'p-unverified', name: 'B Est', title: 'Senior Estimator', email: 'b@nolanconstruction.example', email_status: 'unverified' } }]
+                : [200, { person: { id: 'p-good', name: 'C Est', title: 'Estimator', email: 'c@nolanconstruction.example', email_status: 'verified' } }];
+        const s = await setup(['Nolan Construction Inc'], { 'mixed_companies/search': () => [200, ORG], 'mixed_people/api_search': () => [200, people], 'people/match': (b) => match(b) });
+        cleanup = s.api.close;
+        const [r] = await s.go();
+        const matched = s.api.calls.filter((c) => c.path === 'people/match').map((c) => c.body.id);
+        expect(matched).toEqual(['p-unverified', 'p-good']);
+        expect(r).toMatchObject({ status: 'enriched', primary: { id: 'p-good', email: 'c@nolanconstruction.example' }, creditsSpent: 3 });
+        // Running again buys nothing: the company search and both people come from the cache.
+        const before = s.api.calls.length;
+        const [again] = await s.go();
+        expect(again).toMatchObject({ status: 'enriched', creditsSpent: 0 });
+        expect(s.api.calls.slice(before).map((c) => c.path)).toEqual([]);
+    });
+
     test('no confident company match: stops after the organization search (1 credit)', async () => {
         const s = await setup(['Nolan Construction Inc'], { 'mixed_companies/search': () => [200, { organizations: [{ id: 'x', name: 'Nolan Plumbing Supply', state: 'California' }] }] });
         cleanup = s.api.close;
