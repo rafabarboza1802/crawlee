@@ -1,2 +1,5 @@
 at,month,plan_id,company_id,endpoint,credits,http_status
-# 2026-10: 0 credits used
+2026-10-25T23:49:53.857Z,2026-10,297b8285f2f9,cahill-contractors,mixed_companies/search,1,200
+2026-10-25T23:49:54.048Z,2026-10,297b8285f2f9,cahill-contractors,mixed_people/api_search,0,200
+2026-10-25T23:49:54.338Z,2026-10,297b8285f2f9,cahill-contractors,people/match,1,200
+# 2026-10: 2 credits used

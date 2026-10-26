@@ -579,6 +579,39 @@
           "202605191540 otc alterations permit $2,612,800: 5th flr. t.i. single tenant flr, demo and nonstructure partitions +building back non-str. "
         ]
       }
+    },
+    "research:sf-permits:896770": {
+      "retrieved_at": "2026-10-25T23:35:42.319Z",
+      "value": {
+        "license": "896770",
+        "since": "2023-10-26",
+        "permits": 8,
+        "newBuildings": 0,
+        "totalValue": 2207005,
+        "largestValue": 1211500,
+        "specialistPermits": 1,
+        "examples": [
+          "202603167645 additions alterations or repairs $1,211,500: excavate & lower ground floor for new habitable space. interior remodel at all floors, new",
+          "202511189828 additions alterations or repairs $988,000: interior remodel & rear yard addition of (e) single family home includes structural & shor",
+          "202603167645 additions alterations or repairs $1,211,500: excavate & lower ground floor for new habitable space. interior remodel at all floors, new"
+        ]
+      }
+    },
+    "research:sf-permits:829808": {
+      "retrieved_at": "2026-10-25T23:35:42.319Z",
+      "value": {
+        "license": "829808",
+        "since": "2023-10-26",
+        "permits": 101,
+        "newBuildings": 0,
+        "totalValue": 121262895,
+        "largestValue": 43775250,
+        "specialistPermits": 0,
+        "examples": [
+          "202503172334 additions alterations or repairs $43,775,250: level 1 thru level 4 & roof only: tenant improvement.new partitions, ceiling, finishes, mi",
+          "202503111984 otc alterations permit $10,780,569: level 5 - interior tenant improvement, includes new non-load rearing partition, ceilings, "
+        ]
+      }
     }
   }
 }

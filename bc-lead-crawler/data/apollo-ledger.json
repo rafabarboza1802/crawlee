@@ -1,0 +1,26 @@
+[
+  {
+    "at": "2026-10-25T23:49:53.857Z",
+    "plan_id": "297b8285f2f9",
+    "account_id": "cahill-contractors",
+    "endpoint": "mixed_companies/search",
+    "credits": 1,
+    "status": 200
+  },
+  {
+    "at": "2026-10-25T23:49:54.048Z",
+    "plan_id": "297b8285f2f9",
+    "account_id": "cahill-contractors",
+    "endpoint": "mixed_people/api_search",
+    "credits": 0,
+    "status": 200
+  },
+  {
+    "at": "2026-10-25T23:49:54.338Z",
+    "plan_id": "297b8285f2f9",
+    "account_id": "cahill-contractors",
+    "endpoint": "people/match",
+    "credits": 1,
+    "status": 200
+  }
+]
