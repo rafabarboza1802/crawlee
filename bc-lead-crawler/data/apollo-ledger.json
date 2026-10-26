@@ -22,5 +22,69 @@
     "endpoint": "people/match",
     "credits": 1,
     "status": 200
+  },
+  {
+    "at": "2026-10-26T01:26:44.660Z",
+    "plan_id": "3c7eec0efffc",
+    "account_id": "cahill-contractors",
+    "endpoint": "mixed_people/api_search",
+    "credits": 0,
+    "status": 200
+  },
+  {
+    "at": "2026-10-26T01:26:44.964Z",
+    "plan_id": "3c7eec0efffc",
+    "account_id": "cahill-contractors",
+    "endpoint": "people/match",
+    "credits": 1,
+    "status": 200
+  },
+  {
+    "at": "2026-10-26T01:26:45.103Z",
+    "plan_id": "3c7eec0efffc",
+    "account_id": "ivyhills",
+    "endpoint": "mixed_companies/search",
+    "credits": 1,
+    "status": 200
+  },
+  {
+    "at": "2026-10-26T01:26:45.276Z",
+    "plan_id": "3c7eec0efffc",
+    "account_id": "crescent-haights",
+    "endpoint": "mixed_companies/search",
+    "credits": 1,
+    "status": 200
+  },
+  {
+    "at": "2026-10-26T01:26:45.488Z",
+    "plan_id": "3c7eec0efffc",
+    "account_id": "principal-builders",
+    "endpoint": "mixed_companies/search",
+    "credits": 1,
+    "status": 200
+  },
+  {
+    "at": "2026-10-26T01:26:45.662Z",
+    "plan_id": "3c7eec0efffc",
+    "account_id": "principal-builders",
+    "endpoint": "mixed_people/api_search",
+    "credits": 0,
+    "status": 200
+  },
+  {
+    "at": "2026-10-26T01:26:46.749Z",
+    "plan_id": "3c7eec0efffc",
+    "account_id": "principal-builders",
+    "endpoint": "people/match",
+    "credits": 1,
+    "status": 200
+  },
+  {
+    "at": "2026-10-26T01:26:46.921Z",
+    "plan_id": "3c7eec0efffc",
+    "account_id": "clune-construction-company-l-p",
+    "endpoint": "mixed_companies/search",
+    "credits": 1,
+    "status": 200
   }
 ]
