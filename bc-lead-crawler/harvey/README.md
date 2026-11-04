@@ -22,11 +22,13 @@ Harvey runs on **your own computer** (Mac or Linux), not in GitHub.
 
 ## Before you start
 
-1. **A separate sending domain and mailbox.** Don't send cold email from `bestconstruction.pro`. Buy a lookalike
-   domain, for example `bestconstructionbayarea.com` (about $12 a year), and add a Google Workspace mailbox on it,
-   such as `rafa@...` (about $7 a month). Set up SPF, DKIM and DMARC. Google walks you through this.
-2. **Warm that mailbox up for 2 to 4 weeks** with a warmup service (Harvey's docs suggest TrulyInbox)
-   before any cold email goes out.
+1. **The sending mailbox: `info@bestconstruction.pro`** (the company Google Workspace account). Because this is
+   the main business domain, keep the total cold email from `bestconstruction.pro` at 6 a day or less, including the
+   lead crawler once it sends live (then set `max_daily_sends: 3` in each). Check that DKIM is on in
+   admin.google.com → Apps → Google Workspace → Gmail → Authenticate email.
+2. **Ramp up slowly.** The settings start at 2 cold emails a day and add one a day up to 6. The ramp is anchored to
+   `channels.email.warmup.start_date` (set 14 days before 2026-11-04); if you first run Harvey later, change it to
+   14 days before that day.
 3. **An email verifier key.** A free [Reoon](https://reoon.com/email-verifier) key (600 checks a month) is enough.
    Without one, Harvey never sends to an address it guessed.
 4. **Python 3.11+** and **Claude Code** installed and logged in (`claude login`).
@@ -45,10 +47,8 @@ Start with `property-managers`. To use `home-builders` instead, swap the folder 
    ```bash
    cp -r ~/crawlee/bc-lead-crawler/harvey/property-managers/. .
    ```
-3. Open `harvey.local.yaml` and fill in the three `TODO` lines:
-   - `persona.email`: the new sending mailbox.
+3. Open `harvey.local.yaml` and fill in the `TODO` line:
    - `compliance.postal_address`: Best Construction's mailing address. US law requires it in every cold email.
-   - `channels.email.warmup.start_date`: the day warmup started.
 4. Add your keys:
    ```bash
    cp .env.example .env
