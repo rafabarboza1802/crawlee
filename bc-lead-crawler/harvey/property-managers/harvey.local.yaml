@@ -1,0 +1,136 @@
+# Harvey config for Best Construction: PROPERTY MANAGERS / HOAs / FACILITIES segment.
+# Copy this file into your Harvey folder as harvey.local.yaml (it wins over harvey.yaml).
+# Lines marked TODO must be filled in before the first cold email.
+
+persona:
+  name: "Rafa"
+  company: "Best Construction"
+  role: "Owner"
+  email: "rafa@TODO-sending-domain.com"   # TODO: the mailbox Harvey sends from (dedicated domain, not bestconstruction.pro)
+  linkedin: ""
+  tone: "practical contractor, plain-spoken, concrete numbers, no jargon"
+
+product:
+  name: "Commercial pavers, pool deck pavers, build & remodel"
+  description: >-
+    Best Construction (Pinole, CA) installs commercial paver walkways, courtyards,
+    parking areas and pool decks, and handles build and remodel work for apartment
+    communities, HOAs and commercial properties across the SF Bay Area (about 100
+    miles around Pinole). 19+ years, licensed and insured, BBB-accredited.
+  pricing: "Fixed-price, line-item bids after a free property walk"
+  key_benefits:
+    - "Line-item bids that are easy for boards and owners to review and approve"
+    - "Every job photo-documented before, during and after, for your records"
+    - "We schedule around tenants and residents: phased work, access kept open"
+    - "Walk the property once and you get one fixed number, no change-order surprises"
+    - "19+ years in the Bay Area, licensed, insured and BBB-accredited"
+  objection_responses:
+    "too expensive": "Understood. The bid is line-item, so the board can see exactly what each part costs and phase the work if the budget needs it."
+    "already have a contractor": "Makes sense. A second line-item number on the next paver or pool deck project is useful for the board either way. Happy to walk it when it comes up."
+    "not right now": "No problem. When is the board setting next year's capital budget? I can walk the property ahead of that so you have a real number."
+    "send me info": "Sure. Easiest is a quick walk of the property: I look at the areas you're thinking about and send a fixed line-item number. What day works?"
+  offer:
+    primary: "Fixed-price, line-item bid for paver, pool deck or remodel work"
+    entry: "Free property walk with a written line-item number afterwards"
+    goal: "book_call"
+    booking_method: "ask_preference"
+    booking_url: ""
+    meeting_duration: "30-minute property walk"
+    meeting_owner: "Rafa"
+
+icp:
+  industries:
+    - "property management company"
+    - "HOA management company"
+    - "commercial property management"
+    - "facilities management"
+  company_size: "5-200 employees"
+  titles:
+    - "Property Manager"
+    - "Community Association Manager"
+    - "Regional Property Manager"
+    - "Facilities Manager"
+    - "Director of Maintenance"
+    - "Owner"
+  geography:
+    - "Pinole, CA"
+    - "San Francisco, CA"
+    - "Oakland, CA"
+    - "Walnut Creek, CA"
+    - "San Jose, CA"
+    - "Santa Rosa, CA"
+    - "Sacramento, CA"
+    - "Stockton, CA"
+  # "lat,lng,radius_km": together these cover roughly 100 miles around Pinole.
+  geo_coordinates:
+    "Pinole, CA": "38.0044,-122.2989,40"
+    "San Francisco, CA": "37.7749,-122.4194,25"
+    "Oakland, CA": "37.8044,-122.2712,25"
+    "Walnut Creek, CA": "37.9101,-122.0652,30"
+    "San Jose, CA": "37.3382,-121.8863,40"
+    "Santa Rosa, CA": "38.4405,-122.7144,40"
+    "Sacramento, CA": "38.5816,-121.4944,40"
+    "Stockton, CA": "37.9577,-121.2908,30"
+  keyword_variants:
+    "property management company": ["apartment management company", "property managers"]
+    "HOA management company": ["community association management", "HOA management"]
+  hiring_signals:
+    - "Maintenance Supervisor"
+    - "Facilities Manager"
+    - "Capital Projects Manager"
+
+channels:
+  email:
+    enabled: true
+    provider: "gmail"            # gmail | microsoft | smtp
+    max_daily_sends: 6           # Best Construction rule: max 5-6 cold emails a day from the domain
+    require_approval: true       # every email waits in the Outbox for you
+    link_domains: ["bestconstruction.pro"]
+    send_to_risky: false
+    max_bounce_rate: 0.05
+    warmup:
+      start_date: ""             # TODO: YYYY-MM-DD the warmup service was switched on
+      min_days: 14
+      start_sends: 2
+      daily_increase: 1
+      dkim_selector: ""
+    send_window:
+      start: "08:00"
+      end: "16:00"
+      weekdays_only: true
+      recipient_timezone: true
+    signature:
+      logo: ""
+      width: 120
+      alt: ""
+      link: ""
+      direction: "auto"
+  linkedin:
+    enabled: false
+
+usage:
+  max_daily_claude_percent: 60
+  heartbeat_interval_minutes: 15
+  quiet_hours:
+    start: "20:00"
+    end: "07:00"
+    timezone: "America/Los_Angeles"
+
+compliance:
+  postal_address: ""             # TODO: Best Construction's mailing address (street, PO box or virtual mailbox)
+  opt_out_line: 'Not interested? Reply "no thanks" and I won''t email again.'
+  # Companies the lead crawler already handles, plus anything in its blocklist.
+  # Refresh with: python3 bc-lead-crawler/harvey/sync_do_not_contact.py
+  do_not_contact:
+    - "bestconstruction.pro"
+    - "cahill-sf.com"
+    - "nibbi.com"
+    - "buildgc.com"
+  precleared:
+    enabled: false
+    sender_country: "US"
+    address_source: "unknown"
+    prospect_country: "US"
+
+writer:
+  email_rules: "skills/email_rules.md"

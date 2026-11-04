@@ -1,0 +1,135 @@
+# Harvey config for Best Construction: HOME BUILDERS segment (Outdoor Living Partner Program only).
+# Copy this file into your Harvey folder as harvey.local.yaml (it wins over harvey.yaml).
+# Lines marked TODO must be filled in before the first cold email.
+
+persona:
+  name: "Rafa"
+  company: "Best Construction"
+  role: "Owner"
+  email: "rafa@TODO-sending-domain.com"   # TODO: the mailbox Harvey sends from (dedicated domain, not bestconstruction.pro)
+  linkedin: ""
+  tone: "practical contractor, plain-spoken, concrete numbers, no jargon"
+
+product:
+  name: "Outdoor Living Partner Program"
+  description: >-
+    Fixed-price backyard packages that home builders sell as design-studio options
+    on new homes, installed by Best Construction (Pinole, CA) across the SF Bay Area.
+    Three tiers: Backyard Foundation $12K (builder margin $3.5K), Outdoor Living
+    $32K (builder margin $10K), Ultimate Oasis $62K (builder margin $20K).
+    19+ years, licensed and insured, BBB-accredited.
+  pricing: "Backyard Foundation $12K / Outdoor Living $32K / Ultimate Oasis $62K, fixed price per home"
+  key_benefits:
+    - "New margin on every home: $3.5K to $20K per backyard, priced and packaged for the design studio"
+    - "Finished-yard model homes sell homes faster than bare dirt"
+    - "About $320K of builder margin per 100 homes at a 40% attach rate"
+    - "Zero-risk 90-day pilot: we build one model backyard at cost and you measure the attach rate"
+    - "Fixed prices, one installer, scheduled around your closing calendar"
+  objection_responses:
+    "buyers don't ask for it": "That's what the pilot measures. One model backyard at cost, 90 days, and you see the attach rate in your own design studio."
+    "we already have a landscaper": "Your landscaper can keep the front yards. This is a priced backyard upgrade buyers choose in the design studio, which adds margin rather than cost."
+    "not right now": "Understood. When does the next community open its model homes? A finished model yard is the easiest place to start."
+    "send me info": "Happy to. I have an 8-slide overview of the program with the three tiers and margins. Want me to send it over?"
+  offer:
+    primary: "Outdoor Living Partner Program: three fixed-price backyard tiers sold through the design studio"
+    entry: "90-day pilot: one model backyard built at cost, measure the attach rate"
+    goal: "book_call"
+    booking_method: "ask_preference"
+    booking_url: ""
+    meeting_duration: "20 minutes"
+    meeting_owner: "Rafa"
+
+icp:
+  industries:
+    - "home builder"
+    - "new home builder"
+  company_size: "10-1000 employees"
+  titles:
+    - "Division President"
+    - "VP of Sales and Marketing"
+    - "Director of Purchasing"
+    - "Design Studio Manager"
+    - "VP of Construction"
+    - "Owner"
+  geography:
+    - "Pinole, CA"
+    - "San Francisco, CA"
+    - "Oakland, CA"
+    - "Walnut Creek, CA"
+    - "San Jose, CA"
+    - "Santa Rosa, CA"
+    - "Sacramento, CA"
+    - "Stockton, CA"
+  # "lat,lng,radius_km": together these cover roughly 100 miles around Pinole.
+  geo_coordinates:
+    "Pinole, CA": "38.0044,-122.2989,40"
+    "San Francisco, CA": "37.7749,-122.4194,25"
+    "Oakland, CA": "37.8044,-122.2712,25"
+    "Walnut Creek, CA": "37.9101,-122.0652,30"
+    "San Jose, CA": "37.3382,-121.8863,40"
+    "Santa Rosa, CA": "38.4405,-122.7144,40"
+    "Sacramento, CA": "38.5816,-121.4944,40"
+    "Stockton, CA": "37.9577,-121.2908,30"
+  keyword_variants:
+    "home builder": ["new homes", "new home community"]
+    "new home builder": ["residential developer new homes"]
+  hiring_signals:
+    - "Design Studio Consultant"
+    - "New Home Sales Consultant"
+    - "Purchasing Manager"
+
+channels:
+  email:
+    enabled: true
+    provider: "gmail"            # gmail | microsoft | smtp
+    max_daily_sends: 6           # Best Construction rule: max 5-6 cold emails a day from the domain
+    require_approval: true       # every email waits in the Outbox for you
+    link_domains: ["bestconstruction.pro"]
+    send_to_risky: false
+    max_bounce_rate: 0.05
+    warmup:
+      start_date: ""             # TODO: YYYY-MM-DD the warmup service was switched on
+      min_days: 14
+      start_sends: 2
+      daily_increase: 1
+      dkim_selector: ""
+    send_window:
+      start: "08:00"
+      end: "16:00"
+      weekdays_only: true
+      recipient_timezone: true
+    signature:
+      logo: ""
+      width: 120
+      alt: ""
+      link: ""
+      direction: "auto"
+  linkedin:
+    enabled: false
+
+usage:
+  max_daily_claude_percent: 60
+  heartbeat_interval_minutes: 15
+  quiet_hours:
+    start: "20:00"
+    end: "07:00"
+    timezone: "America/Los_Angeles"
+
+compliance:
+  postal_address: ""             # TODO: Best Construction's mailing address (street, PO box or virtual mailbox)
+  opt_out_line: 'Not interested? Reply "no thanks" and I won''t email again.'
+  # Companies the lead crawler already handles, plus anything in its blocklist.
+  # Refresh with: python3 bc-lead-crawler/harvey/sync_do_not_contact.py
+  do_not_contact:
+    - "bestconstruction.pro"
+    - "cahill-sf.com"
+    - "nibbi.com"
+    - "buildgc.com"
+  precleared:
+    enabled: false
+    sender_country: "US"
+    address_source: "unknown"
+    prospect_country: "US"
+
+writer:
+  email_rules: "skills/email_rules.md"
