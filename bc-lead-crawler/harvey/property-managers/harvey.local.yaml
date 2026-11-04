@@ -6,7 +6,7 @@ persona:
   name: "Rafa"
   company: "Best Construction"
   role: "Owner"
-  email: "rafa@TODO-sending-domain.com"   # TODO: the mailbox Harvey sends from (dedicated domain, not bestconstruction.pro)
+  email: "info@bestconstruction.pro"     # the company Google Workspace mailbox
   linkedin: ""
   tone: "practical contractor, plain-spoken, concrete numbers, no jargon"
 
@@ -89,7 +89,7 @@ channels:
     send_to_risky: false
     max_bounce_rate: 0.05
     warmup:
-      start_date: ""             # TODO: YYYY-MM-DD the warmup service was switched on
+      start_date: "2026-10-21"   # 14 days before the first run, so cold email starts at 2/day and climbs to 6; move it if you start later
       min_days: 14
       start_sends: 2
       daily_increase: 1
