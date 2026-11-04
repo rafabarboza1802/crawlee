@@ -1,6 +1,5 @@
 # Harvey config for Best Construction: PROPERTY MANAGERS / HOAs / FACILITIES segment.
 # Copy this file into your Harvey folder as harvey.local.yaml (it wins over harvey.yaml).
-# Lines marked TODO must be filled in before the first cold email.
 
 persona:
   name: "Rafa"
@@ -117,7 +116,7 @@ usage:
     timezone: "America/Los_Angeles"
 
 compliance:
-  postal_address: ""             # TODO: Best Construction's mailing address (street, PO box or virtual mailbox)
+  postal_address: "Best Construction, 1808 Canyon Dr, Pinole, CA 94564"
   opt_out_line: 'Not interested? Reply "no thanks" and I won''t email again.'
   # Companies the lead crawler already handles, plus anything in its blocklist.
   # Refresh with: python3 bc-lead-crawler/harvey/sync_do_not_contact.py

@@ -47,9 +47,7 @@ Start with `property-managers`. To use `home-builders` instead, swap the folder 
    ```bash
    cp -r ~/crawlee/bc-lead-crawler/harvey/property-managers/. .
    ```
-3. Open `harvey.local.yaml` and fill in the `TODO` line:
-   - `compliance.postal_address`: Best Construction's mailing address. US law requires it in every cold email.
-4. Add your keys:
+3. Add your keys:
    ```bash
    cp .env.example .env
    ```
@@ -58,7 +56,7 @@ Start with `property-managers`. To use `home-builders` instead, swap the folder 
    ```bash
    harvey gmail auth
    ```
-5. Turn on the free prospect signals and find businesses:
+4. Turn on the free prospect signals and find businesses:
    ```bash
    harvey signals --confirm free
    harvey discover --estimate
@@ -69,7 +67,7 @@ Start with `property-managers`. To use `home-builders` instead, swap the folder 
    ```bash
    harvey discover --provider dataforseo_listings --max-spend 2.00
    ```
-6. Start it and review the drafts:
+5. Start it and review the drafts:
    ```bash
    harvey dashboard
    ```
