@@ -1,16 +1,16 @@
-# Best Construction weekly lead report — 2026-11-02
+# Best Construction weekly lead report — 2026-11-09
 
 ## Sources
-- ✅ San Francisco DBI Building Permits (DataSF): 3312 permits scanned, 678 opportunities (151 new)
+- ✅ San Francisco DBI Building Permits (DataSF): 3359 permits scanned, 722 opportunities (167 new)
 
 ## This week
 | | |
 |---|---|
-| Projects scanned | 3312 |
-| New opportunities | 151 |
+| Projects scanned | 3359 |
+| New opportunities | 166 |
 | Qualified leads | 65 |
-| Rejected opportunities | 636 |
-| Leads requiring review | 16 |
+| Rejected opportunities | 678 |
+| Leads requiring review | 18 |
 | Competitors blocked | 5 |
 | Contacts discovered | 0 |
 | Apollo credits used | 0 (month: 0) |
@@ -26,21 +26,18 @@
 | Emails waiting in the queue | 0 |
 
 ## Top opportunities
-- **95** New 156-unit building — 402 West Clarendon Rd — $70.0M, San Francisco (San Francisco County). GC: Cahill Contractors (managing GC of Cahill Guzman Construction Group Jv). Scope: Sitework/earthwork. **QUALIFIED**: Decision maker found 2026-10-25, but no verified business email: call or use LinkedIn. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202610199616)
 - **93** New 8-unit building — 230 Anza St — $2.0M, San Francisco (San Francisco County). GC: not named yet. Scope: Demolition, Sitework/earthwork, Hauling and debris removal. **QUALIFIED**: No GC named on the permit yet: watch for the contractor. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202610079136)
 - **93** New 7-unit building — 4148 24th St — $2.5M, San Francisco (San Francisco County). GC: not named yet. Scope: Demolition, Sitework/earthwork, Hauling and debris removal. **QUALIFIED**: No GC named on the permit yet: watch for the contractor. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202606304372)
-- **88** Seismic structural retrofit and accessibility upgrades in… — 1330 Bush St — $7.2M, San Francisco (San Francisco County). GC: not named yet. Scope: Concrete flatwork/removal, Interior demolition. **QUALIFIED**: No GC named on the permit yet: watch for the contractor. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202610199621)
+- **92** New 156-unit building — 356 West Clarendon Rd — $70.0M, San Francisco (San Francisco County). GC: Cahill Contractors (managing GC of Cahill Guzman Construction Group Jv). Scope: Sitework/earthwork. **QUALIFIED**: Decision maker found 2026-10-25, but no verified business email: call or use LinkedIn. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202610199616)
+- **91** Demolition of surface materials and underground utilities… — 5 Clay St — $600K, San Francisco (San Francisco County). GC: not named yet. Scope: Grading, Sitework/earthwork, Interior demolition. **QUALIFIED**: No GC named on the permit yet: watch for the contractor. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202611030278)
+- **88** Demolition of surface materials and underground utilities… — 1 Clay St — $900K, San Francisco (San Francisco County). GC: not named yet. Scope: Grading, Sitework/earthwork, Interior demolition. **QUALIFIED**: No GC named on the permit yet: watch for the contractor. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202611030268)
 - **87** New construction — 3839 Sacramento St — $1.2M, San Francisco (San Francisco County). GC: not named yet. Scope: Sitework/earthwork. **QUALIFIED**: No GC named on the permit yet: watch for the contractor. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202610269869)
 - **87** New 214-unit building — 3891 Sacramento St — $93.0M, San Francisco (San Francisco County). GC: not named yet. Scope: Sitework/earthwork. **QUALIFIED**: No GC named on the permit yet: watch for the contractor. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202609288686)
-- **86** New 3-unit building — 720 Masonic Av — $450K, San Francisco (San Francisco County). GC: not named yet. Scope: Sitework/earthwork. **QUALIFIED**: No GC named on the permit yet: watch for the contractor. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202609188324)
-- **86** Demolition — 10 South Van Ness Av — $1.0M, San Francisco (San Francisco County). GC: not named yet. Scope: Demolition, Hauling and debris removal. **QUALIFIED**: No GC named on the permit yet: watch for the contractor. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202609047753)
+- **85** Seismic structural retrofit and accessibility upgrades in… — 1330 Bush St — $7.2M, San Francisco (San Francisco County). GC: not named yet. Scope: Concrete flatwork/removal, Interior demolition. **QUALIFIED**: No GC named on the permit yet: watch for the contractor. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202610199621)
 - **85** New 4-unit building — 1750 Oakdale Av — $2.0M, San Francisco (San Francisco County). GC: not named yet. Scope: Sitework/earthwork. **QUALIFIED**: No GC named on the permit yet: watch for the contractor. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202608126480)
 - **85** New 2-unit building — 1000 V Stanyan St — $1.5M, San Francisco (San Francisco County). GC: not named yet. Scope: Sitework/earthwork. **QUALIFIED**: No GC named on the permit yet: watch for the contractor. [source](https://data.sf.gov/resource/i98e-djp9.json?permit_number=202609258626)
 
 ## Errors and source failures
-- None
-
-## Notes
-- Test mode: no prospect is ready yet; use "npm run outreach -- --sample" to send a sample to the test address.
+- Email: Gmail authorization failed (400 invalid_grant). Re-authorize the mailbox and update GMAIL_REFRESH_TOKEN. Nothing was sent; the queue is kept for the next run.
 
 Contact names and email addresses are not in this public report; they are in the private owner email and the encrypted data vault.

@@ -841,6 +841,248 @@
           "202406114197 otc alterations permit $2,236,032: 1/f: new interior partitions and ceilings. replacement of (e) stair with (e) door opening."
         ]
       }
+    },
+    "research:sf-permits:533858": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "533858",
+        "since": "2023-11-10",
+        "permits": 30,
+        "newBuildings": 0,
+        "totalValue": 11624263,
+        "largestValue": 5000000,
+        "specialistPermits": 0,
+        "examples": [
+          "202406063863 additions alterations or repairs $5,000,000: remodel interior of basement & upper 4-stories, including reconfiguring interior framing. ",
+          "202609168220 additions alterations or repairs $3,000,000: replacement of (e) doors/wdws and ext'r material in-kind where req'd.excavation for addtio"
+        ]
+      }
+    },
+    "research:sf-permits:766215": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "766215",
+        "since": "2023-11-10",
+        "permits": 61,
+        "newBuildings": 2,
+        "totalValue": 31022915,
+        "largestValue": 12658800,
+        "specialistPermits": 3,
+        "examples": [
+          "202505065847 new construction $12,658,800: front bldg: construction of a 6 story residential type iii-a over i-a building with 48 res",
+          "202512161925 additions alterations or repairs $3,700,000: full-gut interior remodel-(n)roof finish, updated facades, rear adu (state program), & bas",
+          "202603248140 demolitions $3,000: demolish (e) type 5b, one story rear shed.",
+          "202505065846 demolitions $300,000: demolition of a 1 story type v-b commercial building."
+        ]
+      }
+    },
+    "research:sf-permits:772547": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "772547",
+        "since": "2023-11-10",
+        "permits": 48,
+        "newBuildings": 1,
+        "totalValue": 4961629,
+        "largestValue": 1332000,
+        "specialistPermits": 0,
+        "examples": [
+          "202311100605 additions alterations or repairs $1,332,000: two story horizontal additions to the east, west and north sides of the existing single fa",
+          "202501309398 otc alterations permit $600,000: inkind remodel of 2 bathrooms and wet bar, one primary bath and closet, one kitchen, remov"
+        ]
+      }
+    },
+    "research:sf-permits:1011699": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "1011699",
+        "since": "2023-11-10",
+        "permits": 0,
+        "newBuildings": 0,
+        "totalValue": 0,
+        "largestValue": 0,
+        "specialistPermits": 0,
+        "examples": []
+      }
+    },
+    "research:sf-permits:1036969": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "1036969",
+        "since": "2023-11-10",
+        "permits": 8,
+        "newBuildings": 1,
+        "totalValue": 429002,
+        "largestValue": 260000,
+        "specialistPermits": 0,
+        "examples": [
+          "202605070847 new construction wood frame $260,000: construction of new adu in rear lot yard, type v-b, 2-story adu.",
+          "202507110623 otc alterations permit $80,000: 2/f and 3/f repair fire damages - replace fire damaged studs and front wall covering. repl"
+        ]
+      }
+    },
+    "research:sf-permits:967853": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "967853",
+        "since": "2023-11-10",
+        "permits": 21,
+        "newBuildings": 0,
+        "totalValue": 3156447,
+        "largestValue": 580000,
+        "specialistPermits": 0,
+        "examples": [
+          "202510036695 additions alterations or repairs $580,000: 1st floor: add 1 bedrm, 1 full bath & family room, excavate @ rear, retaining walls. 2nd f",
+          "202507171032 additions alterations or repairs $533,438: 1st floor: add 2 bedrooms, 1 full bath, laundry, media and home office. 2nd floor: remodel"
+        ]
+      }
+    },
+    "research:sf-permits:1115116": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "1115116",
+        "since": "2023-11-10",
+        "permits": 1,
+        "newBuildings": 1,
+        "totalValue": 120000,
+        "largestValue": 120000,
+        "specialistPermits": 0,
+        "examples": [
+          "202509044606 new construction wood frame $120,000: construction of a detached adu (state) type-vb, 2-story residential building."
+        ]
+      }
+    },
+    "research:sf-permits:1121342": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "1121342",
+        "since": "2023-11-10",
+        "permits": 20,
+        "newBuildings": 0,
+        "totalValue": 1979377,
+        "largestValue": 520000,
+        "specialistPermits": 0,
+        "examples": [
+          "202411074627 otc alterations permit $520,000: unit# e on 2/f: remodel unit# e to include all flooring, elec, plumbing, sheetrock in all ",
+          "202510026594 otc alterations permit $360,000: units 108,109,208,308,408,508- repair to all damaged related to fire to abate nov 20253687"
+        ]
+      }
+    },
+    "research:sf-permits:923107": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "923107",
+        "since": "2023-11-10",
+        "permits": 8,
+        "newBuildings": 1,
+        "totalValue": 2629502,
+        "largestValue": 2400000,
+        "specialistPermits": 1,
+        "examples": [
+          "202407317683 new construction wood frame $2,400,000: erect 4 stories type va over 1a basement, 4 unit residential building",
+          "202610159469 otc alterations permit $110,000: install new basement windows along west elevation. creat new ceiling height for future adu",
+          "202407317682 demolitions $30,000: demolish type-5 2-unit/2-story residental building."
+        ]
+      }
+    },
+    "research:sf-permits:1069257": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "1069257",
+        "since": "2023-11-10",
+        "permits": 5,
+        "newBuildings": 0,
+        "totalValue": 290163,
+        "largestValue": 225000,
+        "specialistPermits": 0,
+        "examples": [
+          "202512242602 additions alterations or repairs $225,000: raise roof of (e) 3/f & add bathroom. convert 2/f bath to office, relocate laundry, remode",
+          "202411074570 otc alterations permit $25,000: lower (e) slab 0f 1st floor unit 7 inchs. remodel unit including relocate kitchen and add "
+        ]
+      }
+    },
+    "research:sf-permits:547970": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "547970",
+        "since": "2023-11-10",
+        "permits": 2,
+        "newBuildings": 0,
+        "totalValue": 505255,
+        "largestValue": 350000,
+        "specialistPermits": 1,
+        "examples": [
+          "202506209138 otc alterations permit $350,000: removal and replacement and floor finishes and base trim. remove and replacement of select",
+          "202609107873 otc alterations permit $155,255: demolition of existing hot tub, sauna, and steam room on fourth floor for conversion to ad",
+          "202609107873 otc alterations permit $155,255: demolition of existing hot tub, sauna, and steam room on fourth floor for conversion to ad"
+        ]
+      }
+    },
+    "research:sf-permits:995375": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "995375",
+        "since": "2023-11-10",
+        "permits": 68,
+        "newBuildings": 0,
+        "totalValue": 45056435,
+        "largestValue": 23800000,
+        "specialistPermits": 2,
+        "examples": [
+          "202512081243 additions alterations or repairs $23,800,000: change use from art college-artist studios. ext facade restoration @ (clay/brown bldg & re",
+          "202403228446 additions alterations or repairs $4,128,602: mandatory seismic retrofit of existing building per sfbc section 503.11.1. to allow for fu",
+          "202507312091 otc alterations permit $190,000: demolition of an interior finsihes, partitions, doors, equipment and fixtures under ab017 ",
+          "202603187848 demolitions $20,000: demo (e) parking lot"
+        ]
+      }
+    },
+    "research:sf-permits:861838": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "861838",
+        "since": "2023-11-10",
+        "permits": 4,
+        "newBuildings": 0,
+        "totalValue": 527000,
+        "largestValue": 250000,
+        "specialistPermits": 0,
+        "examples": [
+          "202307051471 additions alterations or repairs $250,000: remodel (e) live-work unit in 2-unit live-work condo bldg- remove (e) structure & portion ",
+          "202608267217 otc alterations permit $157,000: 1/f: repair (e) foundation, (n) slab on grade w/ radiant heat, shift 4 non-load bearing wa"
+        ]
+      }
+    },
+    "research:sf-permits:684341": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "684341",
+        "since": "2023-11-10",
+        "permits": 1,
+        "newBuildings": 0,
+        "totalValue": 3249085,
+        "largestValue": 3249085,
+        "specialistPermits": 0,
+        "examples": [
+          "202609158122 additions alterations or repairs $3,249,085: interior soft demolition and asbestos abatement."
+        ]
+      }
+    },
+    "research:sf-permits:1001057": {
+      "retrieved_at": "2026-11-09T23:48:26.259Z",
+      "value": {
+        "license": "1001057",
+        "since": "2023-11-10",
+        "permits": 39,
+        "newBuildings": 0,
+        "totalValue": 1920658,
+        "largestValue": 200000,
+        "specialistPermits": 1,
+        "examples": [
+          "202312192726 additions alterations or repairs $200,000: renovation of (e) sfh includes reconfiguration of upper level, adding windows to rear exte",
+          "202504295472 otc alterations permit $170,000: comply/w nov 202429997. remodel 3 (e) apartments: remodel 3 kitchens, 3 bathrooms, add new",
+          "202606123094 additions alterations or repairs $75,000: excavate ground floor to create new adu."
+        ]
+      }
     }
   }
 }
