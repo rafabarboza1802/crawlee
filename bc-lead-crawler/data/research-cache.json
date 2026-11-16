@@ -1083,6 +1083,102 @@
           "202606123094 additions alterations or repairs $75,000: excavate ground floor to create new adu."
         ]
       }
+    },
+    "research:sf-permits:937616": {
+      "retrieved_at": "2026-11-16T23:46:02.956Z",
+      "value": {
+        "license": "937616",
+        "since": "2023-11-17",
+        "permits": 12,
+        "newBuildings": 0,
+        "totalValue": 3064956,
+        "largestValue": 1410639,
+        "specialistPermits": 2,
+        "examples": [
+          "202405091826 additions alterations or repairs $1,410,639: 2132 sf 3rd floor addition to existing 7125 sf 2story mixed use bldg including:3(n)beds,(2",
+          "202606294108 additions alterations or repairs $1,390,717: excavate lowest level & (n) foundation, replace all windows, exterior doors, replace in-ki",
+          "202505287342 otc alterations permit $8,000: demo interior of 1st fl and partial basement. vacant building. demolition per sfdbi ab-017",
+          "202606294108 additions alterations or repairs $1,390,717: excavate lowest level & (n) foundation, replace all windows, exterior doors, replace in-ki"
+        ]
+      }
+    },
+    "research:sf-permits:1000673": {
+      "retrieved_at": "2026-11-16T23:46:02.956Z",
+      "value": {
+        "license": "1000673",
+        "since": "2023-11-17",
+        "permits": 0,
+        "newBuildings": 0,
+        "totalValue": 0,
+        "largestValue": 0,
+        "specialistPermits": 0,
+        "examples": []
+      }
+    },
+    "research:sf-permits:959669": {
+      "retrieved_at": "2026-11-16T23:46:02.956Z",
+      "value": {
+        "license": "959669",
+        "since": "2023-11-17",
+        "permits": 1,
+        "newBuildings": 0,
+        "totalValue": 822150,
+        "largestValue": 822150,
+        "specialistPermits": 0,
+        "examples": [
+          "202607315893 otc alterations permit $822,150: #138: interior tenant improvement with interior layout changes. mep scope includes alterat"
+        ]
+      }
+    },
+    "research:sf-permits:955448": {
+      "retrieved_at": "2026-11-16T23:46:02.956Z",
+      "value": {
+        "license": "955448",
+        "since": "2023-11-17",
+        "permits": 30,
+        "newBuildings": 0,
+        "totalValue": 2806322,
+        "largestValue": 420000,
+        "specialistPermits": 0,
+        "examples": [
+          "202506098261 otc alterations permit $420,000: renovation to single family dwelling at 1st floor, convert existing uncondition space to n",
+          "202511109253 otc alterations permit $250,000: relocate kitchen, add bathrooms, add lights & outlets, convert dining room to bedroom w/ba"
+        ]
+      }
+    },
+    "research:sf-permits:1040062": {
+      "retrieved_at": "2026-11-16T23:46:02.956Z",
+      "value": {
+        "license": "1040062",
+        "since": "2023-11-17",
+        "permits": 2,
+        "newBuildings": 0,
+        "totalValue": 470000,
+        "largestValue": 270000,
+        "specialistPermits": 2,
+        "examples": [
+          "202407186837 otc alterations permit $270,000: demolish portions of g/f and 2/f. construct new small closet addition at 2/f entry. interi",
+          "202603187815 additions alterations or repairs $200,000: demo (e) stair from master bed on main lvl.(n) studio adu below (e) master bed.all electri",
+          "202407186837 otc alterations permit $270,000: demolish portions of g/f and 2/f. construct new small closet addition at 2/f entry. interi",
+          "202603187815 additions alterations or repairs $200,000: demo (e) stair from master bed on main lvl.(n) studio adu below (e) master bed.all electri"
+        ]
+      }
+    },
+    "research:sf-permits:1033872": {
+      "retrieved_at": "2026-11-16T23:46:02.956Z",
+      "value": {
+        "license": "1033872",
+        "since": "2023-11-17",
+        "permits": 66,
+        "newBuildings": 0,
+        "totalValue": 1574702,
+        "largestValue": 200000,
+        "specialistPermits": 0,
+        "examples": [
+          "202508012135 otc alterations permit $200,000: make repairs, facade maintenence, remove, prep and recoat loose and falling concrete throu",
+          "202410183252 otc alterations permit $120,000: make repairs per facade inspection report per sf facade maintenance ordinance program (sff"
+        ]
+      }
     }
   }
 }
